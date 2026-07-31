@@ -8,30 +8,26 @@ const MONTH_NAMES = [
 ]
 
 const FONT_OPTIONS = [
+  'Inter, sans-serif',
+  'Poppins, sans-serif',
+  'Work Sans, sans-serif',
+  'Nunito, sans-serif',
+  'Quicksand, sans-serif',
+  'Raleway, sans-serif',
+  'Manrope, sans-serif',
+  'Outfit, sans-serif',
+  'DM Sans, sans-serif',
+  'Space Grotesk, sans-serif',
+  'Sora, sans-serif',
+  'Plus Jakarta Sans, sans-serif',
+  'Urbanist, sans-serif',
+  'Lexend, sans-serif',
+  'Noto Sans, sans-serif',
+  'Be Vietnam Pro, sans-serif',
   '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  'Georgia, "Times New Roman", serif',
-  '"Courier New", "Lucida Console", monospace',
-  '"Times New Roman", serif',
-  'Verdana, Geneva, sans-serif',
   'Arial, Helvetica, sans-serif',
-  'Tahoma, sans-serif',
-  'Trebuchet MS, sans-serif',
-  'Impact, sans-serif',
-  'Palatino, "Palatino Linotype", serif',
-  'Garamond, Baskerville, serif',
-  '"Lucida Sans Unicode", "Lucida Grande", sans-serif',
-  '"Comic Sans MS", "Comic Sans", cursive',
-  'Papyrus, fantasy',
-  '"Roboto", sans-serif',
-  '"Open Sans", sans-serif',
-  '"Lato", sans-serif',
-  '"Montserrat", sans-serif',
-  '"Oswald", sans-serif',
-  '"Merriweather", serif',
-  '"Playfair Display", serif',
-  '"Ubuntu", sans-serif',
-  '"PT Sans", sans-serif',
-  '"Source Sans Pro", sans-serif'
+  'Verdana, Geneva, sans-serif',
+  'Tahoma, sans-serif'
 ]
 
 function App() {
