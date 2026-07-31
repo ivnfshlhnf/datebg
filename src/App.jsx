@@ -114,8 +114,8 @@ function App() {
     ctx.strokeRect(x, y, overlayWidth, overlayHeight)
 
     const padding = overlayWidth * 0.06
-    const headerHeight = overlayHeight * 0.2
-    const titleSize = overlayHeight * 0.12 * scaleFactor
+    const headerHeight = overlayHeight * 0.16
+    const titleSize = overlayHeight * 0.1 * scaleFactor
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -129,7 +129,7 @@ function App() {
     const rows = 7
     const cols = 7
     const gridTop = y + headerHeight
-    const gridHeight = overlayHeight - headerHeight - padding
+    const gridHeight = overlayHeight - headerHeight - padding / 2
     const gridWidth = overlayWidth - padding * 2
     const cellW = gridWidth / cols
     const cellH = gridHeight / rows
@@ -177,7 +177,7 @@ function App() {
         }
 
         ctx.fillStyle = '#ffffff'
-        ctx.font = `bold ${cellH * 0.36 * scaleFactor}px ${fontFamily}`
+        ctx.font = `bold ${cellH * 0.48 * scaleFactor}px ${fontFamily}`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(String(day), cx, cy)
@@ -187,6 +187,56 @@ function App() {
     }
 
     ctx.restore()
+
+    // Render holiday list panel outside (below) the calendar overlay
+    if (holidays.length > 0) {
+      const sortedHolidays = holidays
+        .slice()
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+      const gap = overlayHeight * 0.04
+      const panelX = x
+      const panelWidth = overlayWidth
+      const panelY = y + overlayHeight + gap
+      const bottomPadding = height * 0.03
+      const availableHeight = Math.max(0, height - panelY - bottomPadding)
+
+      const panelPadding = padding * 0.8
+      const usableHeight = Math.max(0, availableHeight - panelPadding)
+      const desiredFont = overlayWidth * 0.035 * scaleFactor
+      const minFont = overlayWidth * 0.02
+      const lineHeightRatio = 1.45
+      const listFontSize = Math.max(
+        minFont,
+        Math.min(desiredFont, usableHeight / (sortedHolidays.length * lineHeightRatio))
+      )
+      const listLineHeight = listFontSize * lineHeightRatio
+      const panelHeight = sortedHolidays.length * listLineHeight + panelPadding
+
+      ctx.save()
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+      ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
+      ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+      ctx.font = `500 ${listFontSize}px ${fontFamily}`
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+
+      sortedHolidays.forEach((h, i) => {
+        const d = new Date(h.date)
+        const label = `${d.getDate()}. ${h.localName || h.name}`
+        ctx.fillText(
+          label,
+          panelX + panelPadding,
+          panelY + panelPadding / 2 + (i + 0.5) * listLineHeight
+        )
+      })
+
+      ctx.restore()
+    }
   }
 
   const handleDownload = () => {
@@ -293,6 +343,33 @@ function App() {
           </p>
         )}
       </section>
+
+      {imageFile && (
+        <section className="card holidays-card">
+          <h2>Holidays in {MONTH_NAMES[month]} {year}</h2>
+          {holidays.length === 0 ? (
+            <p className="holidays-empty">
+              {selectedCountry
+                ? 'No national holidays this month.'
+                : 'Select a country to see national holidays.'}
+            </p>
+          ) : (
+            <ul className="holidays-list">
+              {holidays.map((h) => {
+                const d = new Date(h.date)
+                return (
+                  <li key={h.date} className="holiday-item">
+                    <span className="holiday-date">
+                      {d.getDate()} {MONTH_NAMES[month]}
+                    </span>
+                    <span className="holiday-name">{h.localName || h.name}</span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+      )}
 
       {status && <p className="status">{status}</p>}
     </div>
