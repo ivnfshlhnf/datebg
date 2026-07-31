@@ -80,11 +80,14 @@ function App() {
     const ctx = canvas.getContext('2d')
     const img = new Image()
 
-    img.onload = () => {
+    img.onload = async () => {
       canvas.width = img.naturalWidth
       canvas.height = img.naturalHeight
 
       ctx.drawImage(img, 0, 0)
+
+      await document.fonts.ready
+      await document.fonts.load(`bold 16px ${fontFamily}`).catch(() => {})
 
       renderCalendar(ctx, canvas.width, canvas.height)
     }
@@ -210,55 +213,58 @@ function App() {
         <p>Overlay this month's calendar onto your phone background.</p>
       </header>
 
-      <div className="controls">
-        <label>
-          Background image
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-          />
-        </label>
+      <section className="card controls-card">
+        <h2>Customize</h2>
+        <div className="controls">
+          <label>
+            <span>Background image</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            />
+          </label>
 
-        <label>
-          Country
-          <select
-            value={selectedCountry}
-            onChange={(e) => setSelectedCountry(e.target.value)}
-          >
-            <option value="">Select a country</option>
-            {countries.map((c) => (
-              <option key={c.countryCode} value={c.countryCode}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            <span>Country</span>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+            >
+              <option value="">Select a country</option>
+              {countries.map((c) => (
+                <option key={c.countryCode} value={c.countryCode}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Font
-          <select
-            value={fontFamily}
-            onChange={(e) => setFontFamily(e.target.value)}
-          >
-            {FONT_OPTIONS.map((f) => (
-              <option key={f} value={f}>
-                {f.split(',')[0].replace(/["']/g, '')}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            <span>Font</span>
+            <select
+              value={fontFamily}
+              onChange={(e) => setFontFamily(e.target.value)}
+            >
+              {FONT_OPTIONS.map((f) => (
+                <option key={f} value={f}>
+                  {f.split(',')[0].replace(/["']/g, '')}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Size (%)
-          <input
-            type="range"
-            min="50"
-            max="150"
-            value={fontScale}
-            onChange={(e) => setFontScale(Number(e.target.value))}
-          />
-        </label>
+          <label className="range-label">
+            <span>Font size: {fontScale}%</span>
+            <input
+              type="range"
+              min="50"
+              max="150"
+              value={fontScale}
+              onChange={(e) => setFontScale(Number(e.target.value))}
+            />
+          </label>
+        </div>
 
         <button
           className="download"
@@ -267,15 +273,26 @@ function App() {
         >
           Download Wallpaper
         </button>
-      </div>
+      </section>
 
-      <div className="canvas-wrapper">
-        {!imageFile ? (
-          <p className="hint">Upload an image to see the calendar overlay.</p>
-        ) : (
-          <canvas ref={canvasRef} />
+      <section className="card preview-card">
+        <h2>Preview</h2>
+        <div className="canvas-wrapper">
+          {!imageFile ? (
+            <div className="hint">
+              <p>Upload a phone background image to preview the calendar.</p>
+            </div>
+          ) : (
+            <canvas ref={canvasRef} />
+          )}
+        </div>
+        {imageFile && (
+          <p className="resolution">
+            Original resolution: {canvasRef.current?.width ?? 0} ×{' '}
+            {canvasRef.current?.height ?? 0}px
+          </p>
         )}
-      </div>
+      </section>
 
       {status && <p className="status">{status}</p>}
     </div>
