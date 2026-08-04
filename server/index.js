@@ -11,8 +11,19 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const NODE_ENV = process.env.NODE_ENV || 'development'
 
 app.use(cors())
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now()
+  res.on('finish', () => {
+    const duration = Date.now() - start
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path} ${res.statusCode} ${duration}ms`)
+  })
+  next()
+})
 
 // Register bundled fonts
 try {
@@ -24,8 +35,9 @@ try {
     path.join(__dirname, 'fonts', 'Poppins-Bold.woff2'),
     path.join(__dirname, 'fonts', 'Poppins-Medium.woff2'),
   ])
+  console.log(`[startup] Registered ${FontLibrary.families.length} bundled font families`)
 } catch (err) {
-  console.warn('Failed to register bundled fonts:', err.message)
+  console.warn('[startup] Failed to register bundled fonts:', err.message)
 }
 
 const upload = multer({ storage: multer.memoryStorage() })
@@ -92,12 +104,14 @@ app.post('/api/render', upload.single('image'), async (req, res) => {
           const d = new Date(h.date)
           return d.getFullYear() === year && d.getMonth() === month
         })
-      } catch {
-        // leave holidays empty
+        console.log(`[render] Fetched ${holidays.length} holidays for ${countryCode} ${year}-${month + 1}`)
+      } catch (err) {
+        console.warn(`[render] Failed to load holidays for ${countryCode}:`, err.message)
       }
     }
 
     const image = await loadImage(req.file.buffer)
+    console.log(`[render] Input ${req.file.originalname}: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')
@@ -118,7 +132,7 @@ app.post('/api/render', upload.single('image'), async (req, res) => {
     res.set('Content-Type', 'image/png')
     res.set('Content-Disposition', 'inline')
     res.send(pngBuffer)
-    console.log(`Rendered ${req.file.originalname} -> ${pngBuffer.length} bytes in ${Date.now() - start}ms`)
+    console.log(`[render] Output ${pngBuffer.length} bytes in ${Date.now() - start}ms`)
   } catch (err) {
     console.error('Render error:', err)
     res.status(500).json({ error: 'Failed to render image' })
@@ -126,5 +140,6 @@ app.post('/api/render', upload.single('image'), async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`)
+  console.log(`[startup] DateBG server listening on port ${PORT} in ${NODE_ENV} mode (Node ${process.version})`)
+  console.log(`[startup] Health check available at http://localhost:${PORT}/api/health`)
 })
