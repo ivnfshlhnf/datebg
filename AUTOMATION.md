@@ -58,7 +58,52 @@ curl -s -X POST \
    4. **Show Notification** (optional)
       - Title: "Daily calendar wallpaper updated"
 
+## Deploying to a home server
+
+### 1. Build and export the image
+
+On the machine where you built the project:
+
+```bash
+# already built as datebg:test during development
+# re-tag it as datebg:latest for deployment
+docker tag datebg:test datebg:latest
+
+# export the image to a tar file
+docker save -o datebg-latest.tar datebg:latest
+```
+
+The tar file is created at `./datebg-latest.tar` (about 280 MB).
+
+### 2. Copy to your home server
+
+Use `scp`, `rsync`, a USB drive, or any method you prefer:
+
+```bash
+scp datebg-latest.tar docker-compose.yml user@your-home-server:/path/to/datebg/
+```
+
+### 3. Load and run on the home server
+
+SSH into the server and run:
+
+```bash
+cd /path/to/datebg
+
+# load the image
+docker load -i datebg-latest.tar
+
+# start the container
+docker-compose up -d
+```
+
+The API will be available on the server at `http://your-home-server:3000/api/render`.
+
+### 4. Update the iPhone shortcut URL
+
+In the Shortcuts app, change the `Get Contents of URL` URL from `http://your-server:3000/api/render` to the address of your home server, e.g. `http://192.168.1.50:3000/api/render`.
+
 ## Notes
 
-- The server must be reachable from your phone. If running locally, use a tunnel like [ngrok](https://ngrok.com/) or expose it through your home network.
+- The server must be reachable from your phone. If you want access outside your home network, set up port forwarding on your router or use a tunnel like [ngrok](https://ngrok.com/).
 - For a completely hands-off flow, pair the shortcut with an album that has a new photo each day, or add a step that fetches an image from a URL first.

@@ -1,9 +1,10 @@
 services:
   datebg:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: datebg:latest
     container_name: datebg
     ports:
       - "3000:3000"
     restart: unless-stopped
+    # To build locally instead, uncomment the next two lines:
+    # build:
+    #   context: .

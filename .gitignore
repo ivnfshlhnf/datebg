@@ -29,3 +29,7 @@ yarn-error.log*
 # Test outputs
 test-image.png
 rendered.png
+
+# Docker artifacts
+*.tar
+*.tar.gz
