@@ -62,12 +62,11 @@ curl -s -X POST \
 
 ### 1. Build and export the image
 
-On the machine where you built the project:
+On the machine where you built the project (e.g. an ARM Mac building for an x86 home server):
 
 ```bash
-# already built as datebg:test during development
-# re-tag it as datebg:latest for deployment
-docker tag datebg:test datebg:latest
+# build the image for the target platform
+docker buildx build --platform linux/amd64 -t datebg:latest --load .
 
 # export the image to a tar file
 docker save -o datebg-latest.tar datebg:latest
