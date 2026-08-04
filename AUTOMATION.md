@@ -1,22 +1,29 @@
 # iPhone Shortcuts Automation
 
-The server exposes `POST /api/render` which accepts a background image and returns a calendar-overlay wallpaper as a binary PNG. This makes it usable directly from iOS Shortcuts.
+The server exposes `POST /api/render` which accepts a raw background image body and returns a calendar-overlay wallpaper as a binary PNG. This makes it usable directly from iOS Shortcuts without the overhead of multipart form encoding.
 
 ## API
 
 ```text
-POST /api/render
-Content-Type: multipart/form-data
+POST /api/render?country=ID&font=Inter,%20sans-serif&fontScale=100
+Content-Type: image/jpeg
 ```
 
-### Form fields
+### Query parameters
 
-| Field       | Required | Description                                              |
-|-------------|----------|----------------------------------------------------------|
-| `image`     | Yes      | The background image file (JPG/PNG/HEIC/etc.)            |
-| `country`   | No       | ISO-3166-1 alpha-2 country code for holidays, e.g. `ID`  |
-| `font`      | No       | Font family, e.g. `Inter, sans-serif`                    |
-| `fontScale` | No       | Calendar font size percentage, default `100`               |
+| Parameter | Required | Description                                              |
+|-----------|----------|----------------------------------------------------------|
+| `country` | No       | ISO-3166-1 alpha-2 country code for holidays, e.g. `ID`  |
+| `font`    | No       | Font family, e.g. `Inter, sans-serif`                    |
+| `fontScale` | No     | Calendar font size percentage, default `100`             |
+
+### Request body
+
+The request body must be the raw background image bytes. The server accepts common raster formats such as JPEG and PNG; HEIC/HEIF support depends on the underlying canvas library.
+
+### Headers
+
+- `Content-Type` — set to the actual image MIME type when possible (`image/jpeg`, `image/png`, `image/heic`, etc.). The server ignores the value for decoding; it is used only for logging and compatibility.
 
 ### Response
 
@@ -27,12 +34,10 @@ Content-Type: multipart/form-data
 
 ```bash
 curl -s -X POST \
-  -F 'image=@your-wallpaper.jpg' \
-  -F 'country=ID' \
-  -F 'font=Inter, sans-serif' \
-  -F 'fontScale=100' \
+  -H 'Content-Type: image/jpeg' \
+  --data-binary @your-wallpaper.jpg \
   -o rendered-wallpaper.png \
-  http://your-server:3000/api/render
+  'http://your-server:3000/api/render?country=ID&font=Inter%2C%20sans-serif&fontScale=100'
 ```
 
 ## iPhone Shortcut setup
@@ -44,19 +49,31 @@ curl -s -X POST \
    1. **Find Photos** (optional)
       - Filter by album or date to pick the background image of the day.
    2. **Get Contents of URL**
-      - URL: `http://your-server:3000/api/render`
+      - URL: build the request URL with query parameters, e.g.
+
+        ```
+        http://your-server:3000/api/render?country=ID&font=Inter%2C%20sans-serif&fontScale=100
+        ```
+
       - Method: `POST`
-      - Headers: leave empty
-      - Request Body: `Form`
-        - Add field `image` → Magic Variable: the photo from step 1
-        - Add text field `country` → `ID` (or your country code)
-        - Add text field `font` → `Inter, sans-serif`
-        - Add number field `fontScale` → `100`
+      - Headers:
+        - `Content-Type`: `image/jpeg` (use `image/png` if your source image is PNG)
+      - Request Body: `File`
+        - Pass the photo from step 1 as the raw request body.
    3. **Set Wallpaper**
       - Use the output of `Get Contents of URL` as the image.
       - Choose Lock Screen, Home Screen, or both.
    4. **Show Notification** (optional)
       - Title: "Daily calendar wallpaper updated"
+
+### Troubleshooting timeout
+
+If the shortcut times out:
+
+1. Confirm the server is reachable from the phone by visiting `http://your-server:3000/api/health` in Safari.
+2. Make sure the phone is on the same Wi-Fi as the server if you are using a local IP address.
+3. Reduce the input image size. iPhone photos can be very large; use a screenshot or a compressed image for testing.
+4. Check `docker logs datebg` on the server. If the request never appears, the phone did not reach the server.
 
 ## Deploying to a home server
 

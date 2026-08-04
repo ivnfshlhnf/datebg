@@ -98,16 +98,20 @@ function App() {
     if (!imageFile) return
 
     setStatus('Rendering preview…')
-    const formData = new FormData()
-    formData.append('image', imageFile)
-    formData.append('country', selectedCountry)
-    formData.append('font', fontFamily)
-    formData.append('fontScale', String(fontScale))
+
+    const params = new URLSearchParams()
+    if (selectedCountry) params.append('country', selectedCountry)
+    params.append('font', fontFamily)
+    params.append('fontScale', String(fontScale))
 
     try {
-      const response = await fetch(`${API_BASE}/api/render`, {
+      const imageBuffer = await imageFile.arrayBuffer()
+      const response = await fetch(`${API_BASE}/api/render?${params.toString()}`, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': imageFile.type || 'application/octet-stream'
+        },
+        body: imageBuffer
       })
 
       if (!response.ok) {
@@ -245,7 +249,7 @@ function App() {
         </div>
         {imageFile && resolution.width > 0 && (
           <p className="resolution">
-            Original resolution: {resolution.width} × {resolution.height}px
+            Output resolution: {resolution.width} × {resolution.height}px
           </p>
         )}
       </section>

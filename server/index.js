@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import multer from 'multer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Canvas, loadImage, FontLibrary } from 'skia-canvas'
@@ -40,9 +39,8 @@ try {
   console.warn('[startup] Failed to register bundled fonts:', err.message)
 }
 
-const upload = multer({ storage: multer.memoryStorage() })
-
 app.use(express.json())
+app.use('/api/render', express.raw({ type: '*/*', limit: '50mb' }))
 app.use(express.static(path.join(__dirname, '../dist')))
 
 const NAGER_API = 'https://date.nager.at/api/v3'
@@ -53,6 +51,10 @@ const MONTH_NAMES = [
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true })
+})
+
+app.post('/api/echo', (req, res) => {
+  res.json({ type: typeof req.body, length: Buffer.isBuffer(req.body) ? req.body.length : null })
 })
 
 app.get('/api/available-countries', async (_req, res) => {
@@ -80,20 +82,21 @@ app.get('/api/holidays', async (req, res) => {
   }
 })
 
-app.post('/api/render', upload.single('image'), async (req, res) => {
+app.post('/api/render', async (req, res) => {
   const start = Date.now()
+  console.log(`[render] Received request: body=${Buffer.isBuffer(req.body) ? req.body.length : typeof req.body} bytes, content-type=${req.headers['content-type']}`)
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Image file is required' })
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      return res.status(400).json({ error: 'Raw image body is required' })
     }
 
     const today = new Date()
     const year = today.getFullYear()
     const month = today.getMonth()
 
-    const countryCode = req.body.country || ''
-    const fontFamily = req.body.font || 'Inter, sans-serif'
-    const fontScale = Math.max(50, Math.min(150, Number(req.body.fontScale) || 100))
+    const countryCode = req.query.country || ''
+    const fontFamily = req.query.font || 'Inter, sans-serif'
+    const fontScale = Math.max(50, Math.min(150, Number(req.query.fontScale) || 100))
 
     let holidays = []
     if (countryCode) {
@@ -110,8 +113,8 @@ app.post('/api/render', upload.single('image'), async (req, res) => {
       }
     }
 
-    const image = await loadImage(req.file.buffer)
-    console.log(`[render] Input ${req.file.originalname}: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%`)
+    const image = await loadImage(req.body)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')
@@ -137,6 +140,11 @@ app.post('/api/render', upload.single('image'), async (req, res) => {
     console.error('Render error:', err)
     res.status(500).json({ error: 'Failed to render image' })
   }
+})
+
+app.use((err, _req, res, _next) => {
+  console.error('[error]', err)
+  res.status(500).json({ error: 'Internal server error' })
 })
 
 app.listen(PORT, () => {
