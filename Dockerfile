@@ -1,15 +1,31 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 COPY . .
 RUN npm run build
 
-# Serve stage
-FROM node:20-alpine
+# Runtime stage
+FROM node:20-slim
 WORKDIR /app
-RUN npm install -g serve
+
+# Install native dependencies required by skia-canvas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libfontconfig1 \
+    libfreetype6 \
+    libpng16-16 \
+    libjpeg62-turbo \
+    libwebp7 \
+    libgif7 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev
+
 COPY --from=builder /app/dist ./dist
+COPY server ./server
+
+ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["node", "server/index.js"]
