@@ -128,40 +128,98 @@ export default function renderCalendar(ctx, width, height, options) {
     const panelWidth = overlayWidth
     const panelY = y + overlayHeight + gap
     const bottomPadding = height * 0.03
-    const availableHeight = Math.max(0, height - panelY - bottomPadding)
+    const maxPanelHeight = Math.max(0, height - panelY - bottomPadding)
 
     const panelPadding = padding * 0.8
-    const usableHeight = Math.max(0, availableHeight - panelPadding)
+    const usableHeight = Math.max(0, maxPanelHeight - panelPadding)
     const desiredFont = overlayWidth * 0.035 * scaleFactor
     const minFont = overlayWidth * 0.02
-    const lineHeightRatio = 1.45
+    const lineHeightRatio = 1.5
+
+    const textPaddingRight = panelPadding * 1.5
+    const maxTextWidth = panelWidth - panelPadding - textPaddingRight
+
+    // Function to wrap text into multiple lines
+    function wrapText(text, maxWidth) {
+      const words = text.split(' ')
+      const lines = []
+      let currentLine = ''
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i]
+        const testLine = currentLine ? currentLine + ' ' + word : word
+        const testWidth = ctx.measureText(testLine).width
+
+        if (testWidth > maxWidth && currentLine) {
+          lines.push(currentLine)
+          currentLine = word
+        } else {
+          currentLine = testLine
+        }
+      }
+
+      if (currentLine) {
+        lines.push(currentLine)
+      }
+
+      return lines
+    }
+
+    // Measure wrapping using the desired font size
+    const initialFontSize = Math.max(minFont, desiredFont)
+    ctx.font = `500 ${initialFontSize}px "${primaryFont}", sans-serif`
+
+    let totalLines = 0
+    const wrappedHolidays = sortedHolidays.map((h) => {
+      const d = new Date(h.date)
+      const fullLabel = `${d.getDate()}. ${h.localName || h.name}`
+      const wrappedLines = wrapText(fullLabel, maxTextWidth)
+      totalLines += wrappedLines.length
+      return { holiday: h, wrappedLines }
+    })
+
     const listFontSize = Math.max(
       minFont,
-      Math.min(desiredFont, usableHeight / (sortedHolidays.length * lineHeightRatio))
+      Math.min(desiredFont, usableHeight / (totalLines * lineHeightRatio))
     )
     const listLineHeight = listFontSize * lineHeightRatio
-    const panelHeight = sortedHolidays.length * listLineHeight + panelPadding
+    const panelHeight = Math.min(
+      totalLines * listLineHeight + panelPadding,
+      maxPanelHeight
+    )
 
     ctx.save()
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
-    ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-    ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
-    ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
+
+    if (showFrame) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+      ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
+      ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
+
+      // Clip to prevent text overflow beyond the panel frame
+      ctx.beginPath()
+      ctx.rect(panelX, panelY, panelWidth, panelHeight)
+      ctx.clip()
+    }
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
     ctx.font = `500 ${listFontSize}px "${primaryFont}", sans-serif`
     ctx.textAlign = 'left'
-    ctx.textBaseline = 'middle'
+    ctx.textBaseline = 'top'
 
-    sortedHolidays.forEach((h, i) => {
-      const d = new Date(h.date)
-      const label = `${d.getDate()}. ${h.localName || h.name}`
-      ctx.fillText(
-        label,
-        panelX + panelPadding,
-        panelY + panelPadding / 2 + (i + 0.5) * listLineHeight
-      )
+    const topTextY = panelY + panelPadding * 0.5
+    let currentY = topTextY
+
+    wrappedHolidays.forEach((item) => {
+      item.wrappedLines.forEach((line, lineIndex) => {
+        ctx.fillText(
+          line,
+          panelX + panelPadding,
+          currentY + lineIndex * listLineHeight
+        )
+      })
+      currentY += item.wrappedLines.length * listLineHeight
     })
 
     ctx.restore()
