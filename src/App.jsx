@@ -67,15 +67,13 @@ const DEFAULTS = {
   textOutlineAutoContrast: false
 }
 
-function Section({ title, children, reset, defaultOpen = true }) {
-  const [open, setOpen] = useState(defaultOpen)
-
+function Section({ title, children, reset, open, onToggle }) {
   return (
     <div className={`control-section ${open ? 'open' : 'collapsed'}`}>
       <button
         type="button"
         className="section-header"
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         aria-expanded={open}
       >
         <h3>{title}</h3>
@@ -147,6 +145,7 @@ function App() {
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
   const [copied, setCopied] = useState(false)
   const [fontOpen, setFontOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('Background')
 
   const previewRef = useRef(null)
   const fontSelectRef = useRef(null)
@@ -325,7 +324,11 @@ function App() {
       <section className="card controls-card">
         <h2>Customize</h2>
 
-        <Section title="Background" defaultOpen>
+        <Section
+          title="Background"
+          open={activeSection === 'Background'}
+          onToggle={() => setActiveSection('Background')}
+        >
           <div className="control-row file-control">
             <label htmlFor="bg-image">Background image</label>
             <div className={`file-input ${imageFile ? 'has-file' : ''}`}>
@@ -374,6 +377,8 @@ function App() {
 
         <Section
           title="Style"
+          open={activeSection === 'Style'}
+          onToggle={() => setActiveSection('Style')}
           reset={() => {
             setFontFamily(DEFAULTS.fontFamily)
             setFontScale(DEFAULTS.fontScale)
@@ -448,6 +453,8 @@ function App() {
 
         <Section
           title="Layout"
+          open={activeSection === 'Layout'}
+          onToggle={() => setActiveSection('Layout')}
           reset={() => {
             setCalendarWidth(DEFAULTS.calendarWidth)
             setCalendarHeight(DEFAULTS.calendarHeight)
@@ -461,6 +468,8 @@ function App() {
 
         <Section
           title="Frame"
+          open={activeSection === 'Frame'}
+          onToggle={() => setActiveSection('Frame')}
           reset={() => {
             setShowFrame(DEFAULTS.showFrame)
             setFramePadding(DEFAULTS.framePadding)
@@ -509,7 +518,11 @@ function App() {
           </div>
         </Section>
 
-        <Section title="API Link">
+        <Section
+          title="API Link"
+          open={activeSection === 'API Link'}
+          onToggle={() => setActiveSection('API Link')}
+        >
           <div className="control-row params-row">
             <div className="params-field">
               <input
