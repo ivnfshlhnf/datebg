@@ -64,7 +64,19 @@ const DEFAULTS = {
   frameColor: '#000000',
   frameBorder: true,
   textOutline: true,
-  textOutlineAutoContrast: false
+  textOutlineAutoContrast: false,
+  country: 'ID'
+}
+
+async function detectCountryFromIP() {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { cache: 'no-store' })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data?.country_code || null
+  } catch {
+    return null
+  }
 }
 
 function Section({ title, children, reset, open, onToggle }) {
@@ -155,9 +167,22 @@ function App() {
   const month = today.getMonth()
 
   useEffect(() => {
+    const pickCountry = async (list) => {
+      if (!selectedCountry && list.length > 0) {
+        const detected = await detectCountryFromIP()
+        const availableCodes = new Set(list.map((c) => c.countryCode))
+        const initial = detected && availableCodes.has(detected) ? detected : DEFAULTS.country
+        setSelectedCountry(initial)
+      }
+    }
+
     fetch(`${API_BASE}/api/available-countries`)
       .then((res) => res.json())
-      .then((data) => setCountries(data || []))
+      .then(async (data) => {
+        const list = data || []
+        setCountries(list)
+        await pickCountry(list)
+      })
       .catch(() => setStatus('Failed to load countries.'))
   }, [])
 
