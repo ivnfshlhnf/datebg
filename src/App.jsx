@@ -52,24 +52,97 @@ const FONT_OPTIONS = [
   'Tahoma, sans-serif'
 ]
 
+const DEFAULTS = {
+  fontFamily: FONT_OPTIONS[0],
+  fontScale: 100,
+  calendarWidth: 92,
+  calendarHeight: 33,
+  calendarY: 33,
+  framePadding: 6,
+  showFrame: true,
+  frameOpacity: 55,
+  frameColor: '#000000',
+  frameBorder: true,
+  textOutline: true,
+  textOutlineAutoContrast: false
+}
+
+function Section({ title, children, reset, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className={`control-section ${open ? 'open' : 'collapsed'}`}>
+      <button
+        type="button"
+        className="section-header"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <h3>{title}</h3>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="section-body">
+          {children}
+          {reset && (
+            <button type="button" className="reset-section" onClick={reset}>
+              Reset to defaults
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Toggle({ checked, onChange, label, disabled = false }) {
+  return (
+    <label className={`toggle-row ${disabled ? 'disabled' : ''}`}>
+      <span className="toggle-track">
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="toggle-thumb" aria-hidden="true" />
+      </span>
+      <span>{label}</span>
+    </label>
+  )
+}
+
 function App() {
   const [countries, setCountries] = useState([])
   const [selectedCountry, setSelectedCountry] = useState('')
   const [imageFile, setImageFile] = useState(null)
   const [holidays, setHolidays] = useState([])
   const [status, setStatus] = useState('')
-  const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0])
-  const [fontScale, setFontScale] = useState(100)
-  const [calendarWidth, setCalendarWidth] = useState(92)
-  const [calendarHeight, setCalendarHeight] = useState(33)
-  const [calendarY, setCalendarY] = useState(33)
-  const [framePadding, setFramePadding] = useState(6)
-  const [showFrame, setShowFrame] = useState(true)
-  const [frameOpacity, setFrameOpacity] = useState(55)
-  const [frameColor, setFrameColor] = useState('#000000')
-  const [frameBorder, setFrameBorder] = useState(true)
-  const [textOutline, setTextOutline] = useState(true)
-  const [textOutlineAutoContrast, setTextOutlineAutoContrast] = useState(false)
+  const [fontFamily, setFontFamily] = useState(DEFAULTS.fontFamily)
+  const [fontScale, setFontScale] = useState(DEFAULTS.fontScale)
+  const [calendarWidth, setCalendarWidth] = useState(DEFAULTS.calendarWidth)
+  const [calendarHeight, setCalendarHeight] = useState(DEFAULTS.calendarHeight)
+  const [calendarY, setCalendarY] = useState(DEFAULTS.calendarY)
+  const [framePadding, setFramePadding] = useState(DEFAULTS.framePadding)
+  const [showFrame, setShowFrame] = useState(DEFAULTS.showFrame)
+  const [frameOpacity, setFrameOpacity] = useState(DEFAULTS.frameOpacity)
+  const [frameColor, setFrameColor] = useState(DEFAULTS.frameColor)
+  const [frameBorder, setFrameBorder] = useState(DEFAULTS.frameBorder)
+  const [textOutline, setTextOutline] = useState(DEFAULTS.textOutline)
+  const [textOutlineAutoContrast, setTextOutlineAutoContrast] = useState(DEFAULTS.textOutlineAutoContrast)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
   const [copied, setCopied] = useState(false)
@@ -252,9 +325,7 @@ function App() {
       <section className="card controls-card">
         <h2>Customize</h2>
 
-        <div className="control-section">
-          <h3>Background</h3>
-
+        <Section title="Background" defaultOpen>
           <div className="control-row file-control">
             <label htmlFor="bg-image">Background image</label>
             <div className={`file-input ${imageFile ? 'has-file' : ''}`}>
@@ -299,11 +370,17 @@ function App() {
             </select>
             <p className="hint-text">Used to highlight national holidays.</p>
           </div>
-        </div>
+        </Section>
 
-        <div className="control-section">
-          <h3>Style</h3>
-
+        <Section
+          title="Style"
+          reset={() => {
+            setFontFamily(DEFAULTS.fontFamily)
+            setFontScale(DEFAULTS.fontScale)
+            setTextOutline(DEFAULTS.textOutline)
+            setTextOutlineAutoContrast(DEFAULTS.textOutlineAutoContrast)
+          }}
+        >
           <div className="control-row" ref={fontSelectRef}>
             <label>Font</label>
             <div className={`custom-select ${fontOpen ? 'open' : ''}`}>
@@ -355,79 +432,84 @@ function App() {
 
           {renderSlider('Font size', fontScale, 50, 150, setFontScale)}
 
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={textOutline}
-              onChange={(e) => setTextOutline(e.target.checked)}
-            />
-            <span>Text outline</span>
-          </label>
+          <Toggle
+            checked={textOutline}
+            onChange={setTextOutline}
+            label="Text outline"
+          />
 
-          <label className={`checkbox-row ${!textOutline ? 'disabled' : ''}`}>
-            <input
-              type="checkbox"
-              checked={textOutline && textOutlineAutoContrast}
-              disabled={!textOutline}
-              onChange={(e) => setTextOutlineAutoContrast(e.target.checked)}
-            />
-            <span>Auto-contrast outline</span>
-          </label>
-        </div>
+          <Toggle
+            checked={textOutline && textOutlineAutoContrast}
+            onChange={setTextOutlineAutoContrast}
+            label="Auto-contrast outline"
+            disabled={!textOutline}
+          />
+        </Section>
 
-        <div className="control-section">
-          <h3>Layout</h3>
-
+        <Section
+          title="Layout"
+          reset={() => {
+            setCalendarWidth(DEFAULTS.calendarWidth)
+            setCalendarHeight(DEFAULTS.calendarHeight)
+            setCalendarY(DEFAULTS.calendarY)
+          }}
+        >
           {renderSlider('Calendar width', calendarWidth, 50, 100, setCalendarWidth)}
           {renderSlider('Calendar height', calendarHeight, 20, 50, setCalendarHeight)}
           {renderSlider('Vertical position', calendarY, 0, 100, setCalendarY)}
-          {renderSlider('Frame spacing', framePadding, 0, 15, setFramePadding)}
+        </Section>
 
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={showFrame}
-              onChange={(e) => setShowFrame(e.target.checked)}
-            />
-            <span>Show calendar frame</span>
-          </label>
-        </div>
+        <Section
+          title="Frame"
+          reset={() => {
+            setShowFrame(DEFAULTS.showFrame)
+            setFramePadding(DEFAULTS.framePadding)
+            setFrameOpacity(DEFAULTS.frameOpacity)
+            setFrameColor(DEFAULTS.frameColor)
+            setFrameBorder(DEFAULTS.frameBorder)
+          }}
+        >
+          <Toggle
+            checked={showFrame}
+            onChange={setShowFrame}
+            label="Show calendar frame"
+          />
 
-        <div className="control-section">
-          <h3>Frame</h3>
+          <div className={`frame-options ${showFrame ? '' : 'disabled'}`}>
+            {renderSlider('Frame spacing', framePadding, 0, 15, setFramePadding)}
 
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={frameBorder}
-              onChange={(e) => setFrameBorder(e.target.checked)}
-            />
-            <span>Show frame border</span>
-          </label>
-
-          <div className="control-row color-control">
-            <label htmlFor="frame-color">Background color</label>
-            <div className="color-field">
-              <input
-                id="frame-color"
-                type="color"
-                value={frameColor}
-                onChange={(e) => setFrameColor(e.target.value)}
-              />
-              <input
-                type="text"
-                value={frameColor}
-                onChange={(e) => setFrameColor(e.target.value)}
-                aria-label="Frame background color hex"
-              />
+            <div className="control-row color-control">
+              <label htmlFor="frame-color">Background color</label>
+              <div className="color-field">
+                <input
+                  id="frame-color"
+                  type="color"
+                  value={frameColor}
+                  disabled={!showFrame}
+                  onChange={(e) => setFrameColor(e.target.value)}
+                />
+                <input
+                  type="text"
+                  value={frameColor}
+                  disabled={!showFrame}
+                  onChange={(e) => setFrameColor(e.target.value)}
+                  aria-label="Frame background color hex"
+                />
+              </div>
             </div>
+
+            {renderSlider('Opacity', frameOpacity, 0, 100, setFrameOpacity)}
+
+            <Toggle
+              checked={frameBorder}
+              onChange={setFrameBorder}
+              label="Show frame border"
+              disabled={!showFrame}
+            />
           </div>
+        </Section>
 
-          {renderSlider('Opacity', frameOpacity, 0, 100, setFrameOpacity)}
-        </div>
-
-        <div className="control-section">
-          <h3>API Link</h3>
+        <Section title="API Link">
           <div className="control-row params-row">
             <div className="params-field">
               <input
@@ -449,7 +531,7 @@ function App() {
               </button>
             </div>
           </div>
-        </div>
+        </Section>
 
         <div className="actions">
           <button
