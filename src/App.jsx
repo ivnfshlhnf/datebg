@@ -65,6 +65,9 @@ function App() {
   const [calendarY, setCalendarY] = useState(33)
   const [framePadding, setFramePadding] = useState(6)
   const [showFrame, setShowFrame] = useState(true)
+  const [frameOpacity, setFrameOpacity] = useState(55)
+  const [frameColor, setFrameColor] = useState('#000000')
+  const [frameBorder, setFrameBorder] = useState(true)
   const [textOutline, setTextOutline] = useState(true)
   const [textOutlineAutoContrast, setTextOutlineAutoContrast] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
@@ -147,6 +150,9 @@ function App() {
     params.append('calendarY', String(calendarY))
     params.append('framePadding', String(framePadding))
     params.append('showFrame', String(showFrame))
+    params.append('frameOpacity', String(frameOpacity))
+    params.append('frameColor', frameColor)
+    params.append('frameBorder', String(frameBorder))
     params.append('textOutline', String(textOutline))
     params.append('textOutlineAutoContrast', String(textOutlineAutoContrast))
     return params
@@ -385,6 +391,39 @@ function App() {
             />
             <span>Show calendar frame</span>
           </label>
+        </div>
+
+        <div className="control-section">
+          <h3>Frame</h3>
+
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={frameBorder}
+              onChange={(e) => setFrameBorder(e.target.checked)}
+            />
+            <span>Show frame border</span>
+          </label>
+
+          <div className="control-row color-control">
+            <label htmlFor="frame-color">Background color</label>
+            <div className="color-field">
+              <input
+                id="frame-color"
+                type="color"
+                value={frameColor}
+                onChange={(e) => setFrameColor(e.target.value)}
+              />
+              <input
+                type="text"
+                value={frameColor}
+                onChange={(e) => setFrameColor(e.target.value)}
+                aria-label="Frame background color hex"
+              />
+            </div>
+          </div>
+
+          {renderSlider('Opacity', frameOpacity, 0, 100, setFrameOpacity)}
         </div>
 
         <div className="control-section">

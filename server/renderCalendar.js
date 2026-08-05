@@ -36,6 +36,18 @@ function getOutlineColor(ctx, x, y, width, height, autoContrast) {
   return bgLum > 0.5 ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)'
 }
 
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace('#', '')
+  const bigint = parseInt(clean, 16)
+  if (clean.length !== 6 || Number.isNaN(bigint)) {
+    return `rgba(0, 0, 0, ${alpha})`
+  }
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 function drawOutlinedText(ctx, text, x, y, options = {}) {
   const {
     font,
@@ -72,9 +84,14 @@ export default function renderCalendar(ctx, width, height, options) {
     calendarY = 33,
     framePadding = 6,
     showFrame = true,
+    frameOpacity = 55,
+    frameColor = '#000000',
+    frameBorder = true,
     textOutline = true,
     textOutlineAutoContrast = false
   } = options
+
+  const frameFill = hexToRgba(frameColor, frameOpacity / 100)
 
   const primaryFont = getFirstFontFamily(fontFamily)
 
@@ -88,11 +105,13 @@ export default function renderCalendar(ctx, width, height, options) {
 
   if (showFrame) {
     ctx.save()
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'
+    ctx.fillStyle = frameFill
     ctx.fillRect(x, y, overlayWidth, overlayHeight)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
-    ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
-    ctx.strokeRect(x, y, overlayWidth, overlayHeight)
+    if (frameBorder) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
+      ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
+      ctx.strokeRect(x, y, overlayWidth, overlayHeight)
+    }
     ctx.restore()
   }
 
@@ -276,11 +295,13 @@ export default function renderCalendar(ctx, width, height, options) {
     ctx.save()
 
     if (showFrame) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillStyle = frameFill
       ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-      ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
-      ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
+      if (frameBorder) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
+        ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
+      }
 
       // Clip to prevent text overflow beyond the panel frame
       ctx.beginPath()

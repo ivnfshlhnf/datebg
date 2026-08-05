@@ -403,6 +403,46 @@ input[type='range']::-moz-range-thumb:hover {
   background: #93c5fd;
 }
 
+/* Color input */
+
+.color-control {
+  gap: 0.45rem;
+}
+
+.color-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.color-field input[type='color'] {
+  flex-shrink: 0;
+  width: 3rem;
+  height: auto;
+  min-height: 2.6rem;
+  padding: 0.25rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #0f172a;
+  cursor: pointer;
+}
+
+.color-field input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-field input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.4rem;
+}
+
+.color-field input[type='text'] {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-transform: uppercase;
+}
+
 /* Checkbox */
 
 .checkbox-row {
