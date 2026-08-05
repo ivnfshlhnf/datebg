@@ -2,8 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { Canvas, loadImage, FontLibrary } from 'skia-canvas'
+import { Canvas, loadImage } from 'skia-canvas'
 import renderCalendar from './renderCalendar.js'
+import { registerAllFonts } from './registerFonts.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -24,20 +25,7 @@ app.use((req, res, next) => {
   next()
 })
 
-// Register bundled fonts
-try {
-  FontLibrary.use([
-    path.join(__dirname, 'fonts', 'Inter-Regular.woff2'),
-    path.join(__dirname, 'fonts', 'Inter-Bold.woff2'),
-    path.join(__dirname, 'fonts', 'Inter-Medium.woff2'),
-    path.join(__dirname, 'fonts', 'Poppins-Regular.woff2'),
-    path.join(__dirname, 'fonts', 'Poppins-Bold.woff2'),
-    path.join(__dirname, 'fonts', 'Poppins-Medium.woff2'),
-  ])
-  console.log(`[startup] Registered ${FontLibrary.families.length} bundled font families`)
-} catch (err) {
-  console.warn('[startup] Failed to register bundled fonts:', err.message)
-}
+registerAllFonts()
 
 app.use(express.json())
 app.use('/api/render', express.raw({ type: '*/*', limit: '50mb' }))
