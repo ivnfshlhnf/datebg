@@ -46,8 +46,10 @@ function App() {
   const [previewUrl, setPreviewUrl] = useState(null)
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
   const [copied, setCopied] = useState(false)
+  const [fontOpen, setFontOpen] = useState(false)
 
   const previewRef = useRef(null)
+  const fontSelectRef = useRef(null)
 
   const today = new Date()
   const year = today.getFullYear()
@@ -99,6 +101,17 @@ function App() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!fontOpen) return
+    const handleClickOutside = (e) => {
+      if (fontSelectRef.current && !fontSelectRef.current.contains(e.target)) {
+        setFontOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [fontOpen])
 
   const buildParams = () => {
     const params = new URLSearchParams()
@@ -167,6 +180,36 @@ function App() {
     document.body.removeChild(a)
   }
 
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files?.[0] || null)
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+  }
+
+  const fontDisplayName = (font) =>
+    font.split(',')[0].replace(/[\"']/g, '')
+
+  const renderSlider = (label, value, min, max, onChange, unit = '%') => (
+    <div className="control-row range-control">
+      <div className="range-header">
+        <label>{label}</label>
+        <span className="range-value">
+          {value}
+          {unit}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  )
+
   return (
     <div className="app">
       <header>
@@ -176,19 +219,42 @@ function App() {
 
       <section className="card controls-card">
         <h2>Customize</h2>
-        <div className="controls">
-          <label className="full-width">
-            <span>Background image</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-            />
-          </label>
 
-          <label className="full-width">
-            <span>Country</span>
+        <div className="control-section">
+          <h3>Background</h3>
+
+          <div className="control-row file-control">
+            <label htmlFor="bg-image">Background image</label>
+            <div className={`file-input ${imageFile ? 'has-file' : ''}`}>
+              <input
+                id="bg-image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              {imageFile ? (
+                <div className="file-info">
+                  <span className="file-name" title={imageFile.name}>
+                    {imageFile.name}
+                  </span>
+                  <button
+                    type="button"
+                    className="file-clear"
+                    onClick={clearImage}
+                    aria-label="Remove selected image"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : null}
+            </div>
+            <p className="hint-text">Upload a phone wallpaper to get started.</p>
+          </div>
+
+          <div className="control-row">
+            <label htmlFor="country-select">Country</label>
             <select
+              id="country-select"
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
             >
@@ -199,78 +265,74 @@ function App() {
                 </option>
               ))}
             </select>
-          </label>
+            <p className="hint-text">Used to highlight national holidays.</p>
+          </div>
+        </div>
 
-          <label className="full-width">
-            <span>Font</span>
-            <select
-              value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-            >
-              {FONT_OPTIONS.map((f) => (
-                <option key={f} value={f}>
-                  {f.split(',')[0].replace(/["']/g, '')}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="control-section">
+          <h3>Style</h3>
 
-          <label className="range-label">
-            <span>Font size: {fontScale}%</span>
-            <input
-              type="range"
-              min="50"
-              max="150"
-              value={fontScale}
-              onChange={(e) => setFontScale(Number(e.target.value))}
-            />
-          </label>
+          <div className="control-row" ref={fontSelectRef}>
+            <label>Font</label>
+            <div className={`custom-select ${fontOpen ? 'open' : ''}`}>
+              <button
+                type="button"
+                className="custom-select-trigger"
+                onClick={() => setFontOpen((v) => !v)}
+                aria-haspopup="listbox"
+                aria-expanded={fontOpen}
+              >
+                <span style={{ fontFamily: fontFamily }}>
+                  {fontDisplayName(fontFamily)}
+                </span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              {fontOpen && (
+                <ul className="custom-select-options" role="listbox">
+                  {FONT_OPTIONS.map((f) => (
+                    <li key={f} role="option" aria-selected={fontFamily === f}>
+                      <button
+                        type="button"
+                        className={fontFamily === f ? 'selected' : ''}
+                        style={{ fontFamily: f }}
+                        onClick={() => {
+                          setFontFamily(f)
+                          setFontOpen(false)
+                        }}
+                      >
+                        {fontDisplayName(f)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
 
-          <label className="range-label">
-            <span>Calendar width: {calendarWidth}%</span>
-            <input
-              type="range"
-              min="50"
-              max="100"
-              value={calendarWidth}
-              onChange={(e) => setCalendarWidth(Number(e.target.value))}
-            />
-          </label>
+          {renderSlider('Font size', fontScale, 50, 150, setFontScale)}
+        </div>
 
-          <label className="range-label">
-            <span>Calendar height: {calendarHeight}%</span>
-            <input
-              type="range"
-              min="20"
-              max="50"
-              value={calendarHeight}
-              onChange={(e) => setCalendarHeight(Number(e.target.value))}
-            />
-          </label>
+        <div className="control-section">
+          <h3>Layout</h3>
 
-          <label className="range-label">
-            <span>Vertical position: {calendarY}%</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={calendarY}
-              onChange={(e) => setCalendarY(Number(e.target.value))}
-            />
-          </label>
+          {renderSlider('Calendar width', calendarWidth, 50, 100, setCalendarWidth)}
+          {renderSlider('Calendar height', calendarHeight, 20, 50, setCalendarHeight)}
+          {renderSlider('Vertical position', calendarY, 0, 100, setCalendarY)}
+          {renderSlider('Frame spacing', framePadding, 0, 15, setFramePadding)}
 
-          <label className="range-label">
-            <span>Frame spacing: {framePadding}%</span>
-            <input
-              type="range"
-              min="0"
-              max="15"
-              value={framePadding}
-              onChange={(e) => setFramePadding(Number(e.target.value))}
-            />
-          </label>
-
-          <label className="checkbox-label full-width">
+          <label className="checkbox-row">
             <input
               type="checkbox"
               checked={showFrame}
@@ -280,43 +342,48 @@ function App() {
           </label>
         </div>
 
-        <label className="params-label">
-          <span>API params</span>
-          <div className="params-field">
-            <input
-              type="text"
-              readOnly
-              value={`?${buildParams().toString()}`}
-            />
-            <button
-              type="button"
-              className="copy"
-              onClick={() => {
-                navigator.clipboard.writeText(`?${buildParams().toString()}`)
-                setCopied(true)
-                setTimeout(() => setCopied(false), 1500)
-              }}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
+        <div className="control-section">
+          <h3>API Link</h3>
+          <div className="control-row params-row">
+            <div className="params-field">
+              <input
+                type="text"
+                readOnly
+                value={`?${buildParams().toString()}`}
+                aria-label="Generated API parameters"
+              />
+              <button
+                type="button"
+                className="copy"
+                onClick={() => {
+                  navigator.clipboard.writeText(`?${buildParams().toString()}`)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 1500)
+                }}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
           </div>
-        </label>
+        </div>
 
-        <button
-          className="render"
-          onClick={renderPreview}
-          disabled={!imageFile}
-        >
-          Render Preview
-        </button>
+        <div className="actions">
+          <button
+            className="render"
+            onClick={renderPreview}
+            disabled={!imageFile}
+          >
+            Render Preview
+          </button>
 
-        <button
-          className="download"
-          onClick={handleDownload}
-          disabled={!previewUrl}
-        >
-          Download Wallpaper
-        </button>
+          <button
+            className="download"
+            onClick={handleDownload}
+            disabled={!previewUrl}
+          >
+            Download Wallpaper
+          </button>
+        </div>
       </section>
 
       <section className="card preview-card">
