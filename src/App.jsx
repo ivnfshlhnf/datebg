@@ -65,6 +65,8 @@ function App() {
   const [calendarY, setCalendarY] = useState(33)
   const [framePadding, setFramePadding] = useState(6)
   const [showFrame, setShowFrame] = useState(true)
+  const [textOutline, setTextOutline] = useState(true)
+  const [textOutlineAutoContrast, setTextOutlineAutoContrast] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
   const [copied, setCopied] = useState(false)
@@ -145,6 +147,8 @@ function App() {
     params.append('calendarY', String(calendarY))
     params.append('framePadding', String(framePadding))
     params.append('showFrame', String(showFrame))
+    params.append('textOutline', String(textOutline))
+    params.append('textOutlineAutoContrast', String(textOutlineAutoContrast))
     return params
   }
 
@@ -344,6 +348,25 @@ function App() {
           </div>
 
           {renderSlider('Font size', fontScale, 50, 150, setFontScale)}
+
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={textOutline}
+              onChange={(e) => setTextOutline(e.target.checked)}
+            />
+            <span>Text outline</span>
+          </label>
+
+          <label className={`checkbox-row ${!textOutline ? 'disabled' : ''}`}>
+            <input
+              type="checkbox"
+              checked={textOutline && textOutlineAutoContrast}
+              disabled={!textOutline}
+              onChange={(e) => setTextOutlineAutoContrast(e.target.checked)}
+            />
+            <span>Auto-contrast outline</span>
+          </label>
         </div>
 
         <div className="control-section">

@@ -416,6 +416,15 @@ input[type='range']::-moz-range-thumb:hover {
   color: #cbd5e1;
 }
 
+.checkbox-row.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-row.disabled input[type='checkbox'] {
+  cursor: not-allowed;
+}
+
 .checkbox-row input[type='checkbox'] {
   width: 1.25rem;
   height: 1.25rem;

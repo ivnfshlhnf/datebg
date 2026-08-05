@@ -90,6 +90,8 @@ app.post('/api/render', async (req, res) => {
     const calendarY = Math.max(0, Math.min(100, Number(req.query.calendarY) || 33))
     const framePadding = Math.max(0, Math.min(15, Number(req.query.framePadding) || 6))
     const showFrame = String(req.query.showFrame || 'true').toLowerCase() !== 'false'
+    const textOutline = String(req.query.textOutline || 'true').toLowerCase() !== 'false'
+    const textOutlineAutoContrast = String(req.query.textOutlineAutoContrast || 'false').toLowerCase() === 'true'
 
     let holidays = []
     if (countryCode) {
@@ -107,7 +109,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     const image = await loadImage(req.body)
-    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}`)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, outline=${textOutline}, autoContrast=${textOutlineAutoContrast}`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')
@@ -125,7 +127,9 @@ app.post('/api/render', async (req, res) => {
       calendarHeight,
       calendarY,
       framePadding,
-      showFrame
+      showFrame,
+      textOutline,
+      textOutlineAutoContrast
     })
 
     const pngBuffer = await canvas.png

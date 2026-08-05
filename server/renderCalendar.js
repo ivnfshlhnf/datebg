@@ -7,6 +7,58 @@ function getFirstFontFamily(fontFamily) {
   return fontFamily.split(',')[0].trim().replace(/["']/g, '')
 }
 
+function luminance(r, g, b) {
+  const a = [r, g, b].map((v) => {
+    v /= 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  })
+  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
+}
+
+function getSamplePixel(ctx, x, y, width, height) {
+  try {
+    const data = ctx.getImageData(
+      Math.max(0, Math.min(width - 1, Math.round(x))),
+      Math.max(0, Math.min(height - 1, Math.round(y))),
+      1,
+      1
+    ).data
+    return { r: data[0], g: data[1], b: data[2], a: data[3] }
+  } catch {
+    return { r: 0, g: 0, b: 0, a: 255 }
+  }
+}
+
+function getOutlineColor(ctx, x, y, width, height, autoContrast) {
+  if (!autoContrast) return 'rgba(0, 0, 0, 0.9)'
+  const sample = getSamplePixel(ctx, x, y, width, height)
+  const bgLum = luminance(sample.r, sample.g, sample.b)
+  return bgLum > 0.5 ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)'
+}
+
+function drawOutlinedText(ctx, text, x, y, options = {}) {
+  const {
+    font,
+    fillStyle = '#ffffff',
+    textAlign = 'center',
+    textBaseline = 'middle',
+    outlineWidth = 2,
+    outlineColor = 'rgba(0, 0, 0, 0.9)'
+  } = options
+
+  ctx.save()
+  ctx.font = font
+  ctx.textAlign = textAlign
+  ctx.textBaseline = textBaseline
+  ctx.lineJoin = 'round'
+  ctx.lineWidth = outlineWidth
+  ctx.strokeStyle = outlineColor
+  ctx.strokeText(text, x, y)
+  ctx.fillStyle = fillStyle
+  ctx.fillText(text, x, y)
+  ctx.restore()
+}
+
 export default function renderCalendar(ctx, width, height, options) {
   const {
     year,
@@ -19,7 +71,9 @@ export default function renderCalendar(ctx, width, height, options) {
     calendarHeight = 33,
     calendarY = 33,
     framePadding = 6,
-    showFrame = true
+    showFrame = true,
+    textOutline = true,
+    textOutlineAutoContrast = false
   } = options
 
   const primaryFont = getFirstFontFamily(fontFamily)
@@ -46,15 +100,23 @@ export default function renderCalendar(ctx, width, height, options) {
   const headerHeight = overlayHeight * 0.16
   const titleSize = overlayHeight * 0.1 * scaleFactor
 
-  ctx.fillStyle = '#ffffff'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = `bold ${titleSize}px "${primaryFont}", sans-serif`
-  ctx.fillText(
-    `${MONTH_NAMES[month]} ${year}`,
-    width / 2,
-    y + headerHeight / 2
-  )
+  const headerText = `${MONTH_NAMES[month]} ${year}`
+  const headerX = width / 2
+  const headerY = y + headerHeight / 2
+  if (textOutline) {
+    drawOutlinedText(ctx, headerText, headerX, headerY, {
+      font: `bold ${titleSize}px "${primaryFont}", sans-serif`,
+      fillStyle: '#ffffff',
+      outlineWidth: Math.max(1, titleSize * 0.06),
+      outlineColor: getOutlineColor(ctx, headerX, headerY, width, height, textOutlineAutoContrast)
+    })
+  } else {
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = `bold ${titleSize}px "${primaryFont}", sans-serif`
+    ctx.fillText(headerText, headerX, headerY)
+  }
 
   const rows = 7
   const cols = 7
@@ -70,11 +132,24 @@ export default function renderCalendar(ctx, width, height, options) {
 
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
   const labelSize = cellH * 0.32 * scaleFactor
-  ctx.font = `bold ${labelSize}px "${primaryFont}", sans-serif`
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
 
   dayLabels.forEach((label, i) => {
-    ctx.fillText(label, gridX + cellW * i + cellW / 2, gridTop + cellH * 0.35)
+    const labelX = gridX + cellW * i + cellW / 2
+    const labelY = gridTop + cellH * 0.35
+    if (textOutline) {
+      drawOutlinedText(ctx, label, labelX, labelY, {
+        font: `bold ${labelSize}px "${primaryFont}", sans-serif`,
+        fillStyle: 'rgba(255, 255, 255, 0.8)',
+        outlineWidth: Math.max(1, labelSize * 0.05),
+        outlineColor: getOutlineColor(ctx, labelX, labelY, width, height, textOutlineAutoContrast)
+      })
+    } else {
+      ctx.font = `bold ${labelSize}px "${primaryFont}", sans-serif`
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(label, labelX, labelY)
+    }
   })
 
   const holidaySet = new Set(holidays.map((h) => new Date(h.date).getDate()))
@@ -106,11 +181,21 @@ export default function renderCalendar(ctx, width, height, options) {
         ctx.stroke()
       }
 
-      ctx.fillStyle = '#ffffff'
-      ctx.font = `bold ${cellH * 0.48 * scaleFactor}px "${primaryFont}", sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(String(day), cx, cy)
+      const dayFont = `bold ${cellH * 0.48 * scaleFactor}px "${primaryFont}", sans-serif`
+      if (textOutline) {
+        drawOutlinedText(ctx, String(day), cx, cy, {
+          font: dayFont,
+          fillStyle: '#ffffff',
+          outlineWidth: Math.max(1, cellH * 0.48 * scaleFactor * 0.05),
+          outlineColor: getOutlineColor(ctx, cx, cy, width, height, textOutlineAutoContrast)
+        })
+      } else {
+        ctx.fillStyle = '#ffffff'
+        ctx.font = dayFont
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(String(day), cx, cy)
+      }
 
       day++
     }
@@ -210,14 +295,24 @@ export default function renderCalendar(ctx, width, height, options) {
 
     const topTextY = panelY + panelPadding * 0.5
     let currentY = topTextY
+    const listOutlineWidth = Math.max(1, listFontSize * 0.04)
 
     wrappedHolidays.forEach((item) => {
       item.wrappedLines.forEach((line, lineIndex) => {
-        ctx.fillText(
-          line,
-          panelX + panelPadding,
-          currentY + lineIndex * listLineHeight
-        )
+        const lineX = panelX + panelPadding
+        const lineY = currentY + lineIndex * listLineHeight
+        if (textOutline) {
+          drawOutlinedText(ctx, line, lineX, lineY, {
+            font: `500 ${listFontSize}px "${primaryFont}", sans-serif`,
+            fillStyle: 'rgba(255, 255, 255, 0.95)',
+            textAlign: 'left',
+            textBaseline: 'top',
+            outlineWidth: listOutlineWidth,
+            outlineColor: getOutlineColor(ctx, lineX, lineY, width, height, textOutlineAutoContrast)
+          })
+        } else {
+          ctx.fillText(line, lineX, lineY)
+        }
       })
       currentY += item.wrappedLines.length * listLineHeight
     })
