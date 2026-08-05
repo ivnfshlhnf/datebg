@@ -97,6 +97,11 @@ app.post('/api/render', async (req, res) => {
     const countryCode = req.query.country || ''
     const fontFamily = req.query.font || 'Inter, sans-serif'
     const fontScale = Math.max(50, Math.min(150, Number(req.query.fontScale) || 100))
+    const calendarWidth = Math.max(50, Math.min(100, Number(req.query.calendarWidth) || 92))
+    const calendarHeight = Math.max(20, Math.min(50, Number(req.query.calendarHeight) || 33))
+    const calendarY = Math.max(0, Math.min(100, Number(req.query.calendarY) || 33))
+    const framePadding = Math.max(0, Math.min(15, Number(req.query.framePadding) || 6))
+    const showFrame = String(req.query.showFrame || 'true').toLowerCase() !== 'false'
 
     let holidays = []
     if (countryCode) {
@@ -114,7 +119,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     const image = await loadImage(req.body)
-    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%`)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')
@@ -127,7 +132,12 @@ app.post('/api/render', async (req, res) => {
       fontFamily,
       fontScale,
       holidays,
-      today
+      today,
+      calendarWidth,
+      calendarHeight,
+      calendarY,
+      framePadding,
+      showFrame
     })
 
     const pngBuffer = await canvas.png

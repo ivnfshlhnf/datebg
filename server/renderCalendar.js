@@ -8,24 +8,41 @@ function getFirstFontFamily(fontFamily) {
 }
 
 export default function renderCalendar(ctx, width, height, options) {
-  const { year, month, fontFamily, fontScale, holidays, today } = options
+  const {
+    year,
+    month,
+    fontFamily,
+    fontScale,
+    holidays,
+    today,
+    calendarWidth = 92,
+    calendarHeight = 33,
+    calendarY = 33,
+    framePadding = 6,
+    showFrame = true
+  } = options
 
   const primaryFont = getFirstFontFamily(fontFamily)
 
   const scaleFactor = fontScale / 100
-  const overlayHeight = Math.round(height / 3)
-  const overlayWidth = Math.round(width - width * 0.08)
+  const overlayWidth = Math.round(width * (calendarWidth / 100))
+  const overlayHeight = Math.round(height * (calendarHeight / 100))
   const x = Math.round((width - overlayWidth) / 2)
-  const y = Math.round((height - overlayHeight) / 2)
+  const y = Math.round(height * (calendarY / 100))
+
+  const padding = overlayWidth * (framePadding / 100)
+
+  if (showFrame) {
+    ctx.save()
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'
+    ctx.fillRect(x, y, overlayWidth, overlayHeight)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
+    ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
+    ctx.strokeRect(x, y, overlayWidth, overlayHeight)
+    ctx.restore()
+  }
 
   ctx.save()
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'
-  ctx.fillRect(x, y, overlayWidth, overlayHeight)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
-  ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
-  ctx.strokeRect(x, y, overlayWidth, overlayHeight)
-
-  const padding = overlayWidth * 0.06
   const headerHeight = overlayHeight * 0.16
   const titleSize = overlayHeight * 0.1 * scaleFactor
 
@@ -42,7 +59,7 @@ export default function renderCalendar(ctx, width, height, options) {
   const rows = 7
   const cols = 7
   const gridTop = y + headerHeight
-  const gridHeight = overlayHeight - headerHeight - padding / 2
+  const gridHeight = overlayHeight - headerHeight
   const gridWidth = overlayWidth - padding * 2
   const cellW = gridWidth / cols
   const cellH = gridHeight / rows

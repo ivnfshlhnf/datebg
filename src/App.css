@@ -84,8 +84,8 @@ header p {
 }
 
 .controls {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -97,6 +97,26 @@ label {
   font-size: 0.85rem;
   color: #cbd5e1;
   font-weight: 500;
+}
+
+label.full-width {
+  grid-column: 1 / -1;
+}
+
+label.range-label {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+label.range-label span {
+  flex: 0 0 9rem;
+  white-space: nowrap;
+}
+
+label.range-label input[type='range'] {
+  flex: 1;
 }
 
 label span {
@@ -139,6 +159,56 @@ select {
 input[type='range'] {
   width: 100%;
   cursor: pointer;
+}
+
+.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.params-label {
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.params-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.params-field input[type='text'] {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.params-field button.copy {
+  width: auto;
+  padding: 0.55rem 0.9rem;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  background: #334155;
+  box-shadow: none;
+}
+
+.params-field button.copy:hover:not(:disabled) {
+  background: #475569;
 }
 
 button {

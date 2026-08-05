@@ -38,8 +38,14 @@ function App() {
   const [status, setStatus] = useState('')
   const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0])
   const [fontScale, setFontScale] = useState(100)
+  const [calendarWidth, setCalendarWidth] = useState(92)
+  const [calendarHeight, setCalendarHeight] = useState(33)
+  const [calendarY, setCalendarY] = useState(33)
+  const [framePadding, setFramePadding] = useState(6)
+  const [showFrame, setShowFrame] = useState(true)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
+  const [copied, setCopied] = useState(false)
 
   const previewRef = useRef(null)
 
@@ -94,15 +100,25 @@ function App() {
     }
   }, [])
 
+  const buildParams = () => {
+    const params = new URLSearchParams()
+    if (selectedCountry) params.append('country', selectedCountry)
+    params.append('font', fontFamily)
+    params.append('fontScale', String(fontScale))
+    params.append('calendarWidth', String(calendarWidth))
+    params.append('calendarHeight', String(calendarHeight))
+    params.append('calendarY', String(calendarY))
+    params.append('framePadding', String(framePadding))
+    params.append('showFrame', String(showFrame))
+    return params
+  }
+
   const renderPreview = async () => {
     if (!imageFile) return
 
     setStatus('Rendering preview…')
 
-    const params = new URLSearchParams()
-    if (selectedCountry) params.append('country', selectedCountry)
-    params.append('font', fontFamily)
-    params.append('fontScale', String(fontScale))
+    const params = buildParams()
 
     try {
       const imageBuffer = await imageFile.arrayBuffer()
@@ -161,7 +177,7 @@ function App() {
       <section className="card controls-card">
         <h2>Customize</h2>
         <div className="controls">
-          <label>
+          <label className="full-width">
             <span>Background image</span>
             <input
               type="file"
@@ -170,7 +186,7 @@ function App() {
             />
           </label>
 
-          <label>
+          <label className="full-width">
             <span>Country</span>
             <select
               value={selectedCountry}
@@ -185,7 +201,7 @@ function App() {
             </select>
           </label>
 
-          <label>
+          <label className="full-width">
             <span>Font</span>
             <select
               value={fontFamily}
@@ -209,7 +225,82 @@ function App() {
               onChange={(e) => setFontScale(Number(e.target.value))}
             />
           </label>
+
+          <label className="range-label">
+            <span>Calendar width: {calendarWidth}%</span>
+            <input
+              type="range"
+              min="50"
+              max="100"
+              value={calendarWidth}
+              onChange={(e) => setCalendarWidth(Number(e.target.value))}
+            />
+          </label>
+
+          <label className="range-label">
+            <span>Calendar height: {calendarHeight}%</span>
+            <input
+              type="range"
+              min="20"
+              max="50"
+              value={calendarHeight}
+              onChange={(e) => setCalendarHeight(Number(e.target.value))}
+            />
+          </label>
+
+          <label className="range-label">
+            <span>Vertical position: {calendarY}%</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={calendarY}
+              onChange={(e) => setCalendarY(Number(e.target.value))}
+            />
+          </label>
+
+          <label className="range-label">
+            <span>Frame spacing: {framePadding}%</span>
+            <input
+              type="range"
+              min="0"
+              max="15"
+              value={framePadding}
+              onChange={(e) => setFramePadding(Number(e.target.value))}
+            />
+          </label>
+
+          <label className="checkbox-label full-width">
+            <input
+              type="checkbox"
+              checked={showFrame}
+              onChange={(e) => setShowFrame(e.target.checked)}
+            />
+            <span>Show calendar frame</span>
+          </label>
         </div>
+
+        <label className="params-label">
+          <span>API params</span>
+          <div className="params-field">
+            <input
+              type="text"
+              readOnly
+              value={`?${buildParams().toString()}`}
+            />
+            <button
+              type="button"
+              className="copy"
+              onClick={() => {
+                navigator.clipboard.writeText(`?${buildParams().toString()}`)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1500)
+              }}
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </label>
 
         <button
           className="render"
