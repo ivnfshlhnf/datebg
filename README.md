@@ -167,12 +167,153 @@ DateBG/
 - **API**: Nager.Date API for holiday data
 - **Containerization**: Docker, Docker Compose
 
-## Environment Variables
+## Self-Hosting Guide
+
+DateBG is designed for self-hosting. Here's everything you need to deploy and run your own instance.
+
+### Production Deployment with Docker (Recommended)
+
+1. **Build the production image**:
+   ```bash
+   docker compose build prod
+   ```
+
+2. **Run the production container**:
+   ```bash
+   docker compose up -d prod
+   ```
+
+3. **Access the app** at http://localhost:3000
+
+### Production docker-compose.yml Example
+
+For a production-ready deployment, create a `docker-compose.prod.yml`:
+
+```yaml
+services:
+  datebg:
+    image: datebg:prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: datebg
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+### Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | 3000 | Server port |
 | `NODE_ENV` | development | Environment mode |
+
+### Deployment Options
+
+#### Cloud Platforms
+
+DateBG can be deployed to any Node.js-compatible hosting platform:
+
+- **Railway**: Push to GitHub, connect Railway, deploy automatically
+- **Render**: Create a Web Service from your Git repo
+- **Fly.io**: Use `flyctl launch` and `flyctl deploy`
+- **Heroku**: Push to Git remote, auto-deploys
+- **DigitalOcean App Platform**: Connect GitHub repo, configure build command
+
+#### Self-Hosted Options
+
+- **Raspberry Pi**: Run with Docker on a Pi 4+ for a low-power home server
+- **Home Server**: Deploy on any Linux/Windows/Mac machine with Docker
+- **VPS**: Deploy to a virtual private server (Linode, DigitalOcean, Vultr, Hetzner)
+
+### Remote Access Setup
+
+For iOS Shortcuts integration with remote access:
+
+1. **Deploy to a cloud provider** with a public URL, or
+
+2. **Expose your local server** using:
+   - **ngrok**: `ngrok http 3000`
+   - **Cloudflare Tunnel**: Free secure tunneling
+   - **LocalTunnel**: Open-source alternative
+
+3. **Configure your router** for port forwarding (if self-hosting at home):
+   - Forward external port 3000 to your server's internal IP
+   - Set up Dynamic DNS if you don't have a static IP
+
+4. **Set up HTTPS** (recommended for production):
+   - Use a reverse proxy like **Caddy** or **Nginx** with **Let's Encrypt**
+   - Many cloud providers offer automatic HTTPS
+   - For home setups, consider **Cloudflare Tunnel** which provides HTTPS
+
+### Firewall Configuration
+
+Ensure the following ports are accessible:
+
+- **Port 3000** (or your configured `PORT`): Main application port
+
+For remote access, you may need to:
+- Open port 3000 in your server's firewall
+- Configure security groups (AWS, GCP, Azure)
+- Set up ufw/iptables rules on Linux
+
+### Example: Deploy to Railway
+
+1. Push your code to GitHub
+2. Go to [railway.app](https://railway.app)
+3. Click "New Project" → "Deploy from GitHub"
+4. Select your DateBG repository
+5. Railway will auto-detect the Node.js project and deploy
+6. Get your public URL from Railway dashboard
+7. Use this URL in your iOS Shortcuts
+
+### Example: Deploy to Fly.io
+
+```bash
+# Install flyctl and login
+flyctl auth login
+
+# Launch and deploy
+flyctl launch
+flyctl deploy
+
+# Get your app URL
+flyctl status
+```
+
+### Security Considerations
+
+> **⚠️ Important**: DateBG has no built-in authentication. When deployed publicly, anyone can use your server.
+
+- **No Authentication**: The API endpoints are open by default. Anyone with your server URL can render calendars.
+- **Resource Usage**: Public deployments may incur unexpected compute costs from unauthorized usage.
+- **Rate Limiting**: Consider adding rate limiting middleware to prevent abuse.
+
+### Protecting Your Deployment
+
+Options to restrict access:
+
+1. **Private URL**: Keep your server URL secret (security through obscurity)
+2. **API Key Middleware**: Add simple token-based authentication
+3. **IP Whitelisting**: Restrict access to known IPs (useful for iOS Shortcuts from specific locations)
+4. **Cloud Provider Auth**: Use built-in auth from Railway, Render, etc.
+5. **Add Your Own Auth**: Implement authentication suitable for your use case
+
+### Monitoring & Maintenance
+
+- **Logs**: `docker logs datebg` or check your cloud provider's logging
+- **Health Check**: Monitor `GET /api/health` endpoint
+- **Updates**: Pull latest code, rebuild, and restart
+- **Backups**: Save your custom configurations and settings
 
 ## License
 
