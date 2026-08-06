@@ -37,6 +37,27 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
+function getDateInTimeZone(timeZone) {
+  if (!timeZone) return new Date()
+  try {
+    const now = new Date()
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
+    }).formatToParts(now)
+    const get = (type) => Number(parts.find((p) => p.type === type)?.value)
+    return new Date(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  } catch {
+    return new Date()
+  }
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true })
 })
@@ -78,7 +99,8 @@ app.post('/api/render', async (req, res) => {
       return res.status(400).json({ error: 'Raw image body is required' })
     }
 
-    const today = new Date()
+    const timeZone = req.query.timeZone || ''
+    const today = getDateInTimeZone(timeZone)
     const year = today.getFullYear()
     const month = today.getMonth()
 
@@ -112,7 +134,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     const image = await loadImage(req.body)
-    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, outline=${textOutline}, autoContrast=${textOutlineAutoContrast}`)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, outline=${textOutline}, autoContrast=${textOutlineAutoContrast}, timeZone=${timeZone || 'server'}`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')

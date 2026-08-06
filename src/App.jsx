@@ -158,13 +158,30 @@ function App() {
   const [copied, setCopied] = useState(false)
   const [fontOpen, setFontOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('Background')
+  const [today, setToday] = useState(() => new Date())
 
   const previewRef = useRef(null)
   const fontSelectRef = useRef(null)
 
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = today.getMonth()
+  // Keep the displayed date current when the app is left open overnight
+  useEffect(() => {
+    let intervalId
+    const update = () => setToday(new Date())
+    const scheduleNextUpdate = () => {
+      const now = new Date()
+      const msUntilMidnight =
+        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now
+      return setTimeout(() => {
+        update()
+        intervalId = setInterval(update, 24 * 60 * 60 * 1000)
+      }, msUntilMidnight)
+    }
+    const timeoutId = scheduleNextUpdate()
+    return () => {
+      clearTimeout(timeoutId)
+      clearInterval(intervalId)
+    }
+  }, [])
 
   useEffect(() => {
     const pickCountry = async (list) => {
@@ -192,6 +209,9 @@ function App() {
       return
     }
 
+    const year = today.getFullYear()
+    const month = today.getMonth()
+
     setStatus('Loading holidays…')
     fetch(`${API_BASE}/api/holidays?country=${selectedCountry}&year=${year}`)
       .then((res) => res.json())
@@ -204,7 +224,7 @@ function App() {
         setStatus('')
       })
       .catch(() => setStatus('Failed to load holidays.'))
-  }, [selectedCountry, year, month])
+  }, [selectedCountry, today])
 
   useEffect(() => {
     if (!imageFile) {
@@ -252,6 +272,7 @@ function App() {
     params.append('frameBorder', String(frameBorder))
     params.append('textOutline', String(textOutline))
     params.append('textOutlineAutoContrast', String(textOutlineAutoContrast))
+    params.append('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone)
     return params
   }
 
@@ -303,7 +324,7 @@ function App() {
 
     const a = document.createElement('a')
     a.href = previewUrl
-    a.download = `datebg-${year}-${String(month + 1).padStart(2, '0')}.png`
+    a.download = `datebg-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}.png`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -618,7 +639,7 @@ function App() {
 
       {imageFile && (
         <section className="card holidays-card">
-          <h2>Holidays in {MONTH_NAMES[month]} {year}</h2>
+          <h2>Holidays in {MONTH_NAMES[today.getMonth()]} {today.getFullYear()}</h2>
           {holidays.length === 0 ? (
             <p className="holidays-empty">
               {selectedCountry
@@ -632,7 +653,7 @@ function App() {
                 return (
                   <li key={h.date} className="holiday-item">
                     <span className="holiday-date">
-                      {d.getDate()} {MONTH_NAMES[month]}
+                      {d.getDate()} {MONTH_NAMES[today.getMonth()]}
                     </span>
                     <span className="holiday-name">{h.localName || h.name}</span>
                   </li>
