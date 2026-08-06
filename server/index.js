@@ -35,7 +35,6 @@ const failedAttemptsLimiter = rateLimit({
   max: 10, // 10 failed attempts per window
   standardHeaders: 'draft-6',
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip,
   message: { error: 'Too many failed authentication attempts, try again after 15 minutes' },
   skip: (req) => {
     // Skip rate limiting for successful authentications

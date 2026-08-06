@@ -201,9 +201,10 @@ function App() {
     fetch(`${API_BASE}/api/health`)
       .then((res) => res.json())
       .then((data) => {
-        setAuthEnabled(data?.authEnabled || false)
-        // Show API key input if auth is enabled and no key is stored
-        if (data?.authEnabled && !getApiKey()) {
+        const enabled = data?.authEnabled || false
+        setAuthEnabled(enabled)
+        // Open API key section if auth is required and no key is stored
+        if (enabled && !getApiKey()) {
           setShowApiKeyInput(true)
         }
       })
@@ -442,6 +443,37 @@ function App() {
         <h1 className="app-title">DateBG</h1>
         <p className="app-subtitle">Overlay this month's calendar onto your phone background.</p>
       </header>
+
+      <section className="card api-key-card">
+        <Section
+          title="API Key"
+          open={showApiKeyInput}
+          onToggle={() => setShowApiKeyInput((v) => !v)}
+        >
+          <div className="control-row">
+            <label className="control-label" htmlFor="api-key-input">Server API Key</label>
+            <div className="file-input" style={{ borderStyle: 'solid' }}>
+              <div className="file-info">
+                <input
+                  id="api-key-input"
+                  type="password"
+                  className="input"
+                  value={apiKey}
+                  onChange={handleApiKeyChange}
+                  placeholder="Enter your API key"
+                  aria-label="API Key input"
+                />
+              </div>
+            </div>
+            <p className="control-hint">
+              {authEnabled
+                ? 'Required for authenticated API requests. Your key is stored locally in your browser.'
+                : 'Optional: only needed when the server requires authentication. Your key is stored locally in your browser.'}
+            </p>
+          </div>
+          {authError && <p className="auth-error-message">{authError}</p>}
+        </Section>
+      </section>
 
       <section className="card">
         <div className="card-header">
@@ -780,45 +812,6 @@ function App() {
       )}
 
       {status && <p className="status">{status}</p>}
-      
-      {/* API Key Input Section - only shown when auth is enabled on server */}
-      {authEnabled && (
-        <>
-          {authError && (
-            <div className="card auth-error-card">
-              <div className="card-header">
-                <h2 className="card-title" style={{ color: '#ef4444' }}>Authentication Required</h2>
-              </div>
-              <p className="auth-error-message">{authError}</p>
-            </div>
-          )}
-          
-          <section className="card">
-            <div className="card-header">
-              <h2 className="card-title">API Key</h2>
-            </div>
-            <div className="control-row">
-              <label className="control-label" htmlFor="api-key-input">Server API Key</label>
-              <div className="file-input" style={{ borderStyle: 'solid' }}>
-                <div className="file-info">
-                  <input
-                    id="api-key-input"
-                    type="password"
-                    className="input"
-                    value={apiKey}
-                    onChange={handleApiKeyChange}
-                    placeholder="Enter your API key"
-                    aria-label="API Key input"
-                  />
-                </div>
-              </div>
-              <p className="control-hint">
-                Required for authenticated API requests. Your key is stored locally in your browser.
-              </p>
-            </div>
-          </section>
-        </>
-      )}
     </div>
   )
 }
