@@ -2,6 +2,16 @@
 
 DateBG is a vibe coded web application that overlays the current month's calendar onto your phone background image. It fetches national holidays for your selected country and displays them on the calendar, creating a personalized wallpaper with practical date reference.
 
+![DateBG Demo](docs/demo.png)
+
+*Above: Final calendar wallpaper with Indonesian holidays rendered on a nature background*
+
+## App Interface
+
+![DateBG App UI](docs/app-demo.png)
+
+*Above: DateBG web application interface for customizing calendar overlay*
+
 ## Features
 
 - **Vibe Coded**: Built iteratively with AI assistance
