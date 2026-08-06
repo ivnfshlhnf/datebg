@@ -8,16 +8,16 @@ This project uses Docker Compose for both development and production environment
 
 ```bash
 # Start the development server
-docker-compose up dev
+docker compose up dev
 
 # Or run in detached mode
-docker-compose up -d dev
+docker compose up -d dev
 
 # View logs
-docker-compose logs -f dev
+docker compose logs -f dev
 
 # Stop the development server
-docker-compose down dev
+docker compose down dev
 ```
 
 **Access points:**
@@ -29,13 +29,13 @@ docker-compose down dev
 
 ```bash
 # Build and start production container
-docker-compose up -d prod
+docker compose up -d prod
 
 # View logs
-docker-compose logs -f prod
+docker compose logs -f prod
 
 # Stop production server
-docker-compose down prod
+docker compose down prod
 ```
 
 **Access point:**
@@ -61,21 +61,21 @@ docker-compose down prod
 
 ```bash
 # Rebuild containers after Dockerfile changes
-docker-compose build dev
-docker-compose build prod
+docker compose build dev
+docker compose build prod
 
 # Rebuild and restart
-docker-compose up --build dev
+docker compose up --build dev
 
 # View running containers
-docker-compose ps
+docker compose ps
 
 # Execute commands inside the container
-docker-compose exec dev npm install <package>
-docker-compose exec dev node --version
+docker compose exec dev npm install <package>
+docker compose exec dev node --version
 
 # Clean up (remove containers and volumes)
-docker-compose down -v
+docker compose down -v
 ```
 
 ## Troubleshooting

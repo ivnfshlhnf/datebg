@@ -17,6 +17,8 @@ Content-Type: image/jpeg
 | `font`    | No       | Font family, e.g. `Inter, sans-serif`                    |
 | `fontScale` | No     | Calendar font size percentage, default `100`             |
 
+Additional query parameters from the web UI (e.g. `calendarWidth`, `calendarHeight`, `calendarY`, `frameOpacity`, `frameColor`, `textOutline`, `timeZone`) are also accepted. See `README.md` for the full list.
+
 ### Request body
 
 The request body must be the raw background image bytes. The server accepts common raster formats such as JPEG and PNG; HEIC/HEIF support depends on the underlying canvas library.
@@ -28,7 +30,10 @@ The request body must be the raw background image bytes. The server accepts comm
 ### Response
 
 - `200 OK` with `Content-Type: image/png` — the rendered wallpaper.
-- `400/500` with `Content-Type: application/json` — error details.
+- `400 Bad Request` with `Content-Type: application/json` — missing/invalid parameters or unreadable image.
+- `401 Unauthorized` with `Content-Type: application/json` — the server has `API_KEY` configured and the `X-API-Key` header is missing or incorrect.
+- `429 Too Many Requests` with `Content-Type: application/json` — rate limit exceeded.
+- `500 Internal Server Error` with `Content-Type: application/json` — unexpected server error.
 
 ### Example curl
 
@@ -110,7 +115,7 @@ cd /path/to/datebg
 docker load -i datebg-latest.tar
 
 # start the container
-docker-compose up -d
+docker compose up -d
 ```
 
 The API will be available on the server at `http://your-home-server:3000/api/render`.

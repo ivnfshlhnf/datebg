@@ -2,6 +2,7 @@
   "name": "datebg",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon server/index.js\"",

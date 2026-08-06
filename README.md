@@ -120,48 +120,25 @@ Renders a calendar overlay on an uploaded image.
 
 ## iOS Shortcuts Usage
 
-DateBG was originally built to be used alongside the iOS Shortcuts app for automatic daily wallpaper updates. You can create a shortcut that:
+DateBG works with the iOS Shortcuts app for automatic daily wallpaper updates. The typical flow is:
 
-1. Fetches a background image (from Photos, Files, or a URL)
-2. Sends it to the DateBG server's `/api/render` endpoint
-3. Saves the returned image to your Photos library
-4. Optionally sets it as your wallpaper
-
-This allows your lock screen or home screen to automatically display a fresh calendar wallpaper every day without manual intervention.
+1. Fetch a background image (from Photos, Files, or a URL).
+2. `POST` it to `/api/render` with your chosen parameters.
+3. Save the returned image to your Photos library.
+4. (Optional) Set it as your wallpaper.
 
 ### Example Shortcut Flow
 
 ```
 1. Get image from Photos/Files
-2. Make POST request to: http://your-server:3000/api/render?country=US&font=Inter
-   - Headers: X-API-Key: your-secret-api-key
+2. POST to: https://your-server:3000/api/render?country=US&font=Inter
+   - Header: X-API-Key: your-secret-api-key
+   - Header: Content-Type: <actual image MIME type, e.g. image/png or image/jpeg>
 3. Save response to Photos
 4. (Optional) Set as wallpaper
 ```
 
-### iOS Shortcuts Setup
-
-1. Open the **Shortcuts** app on your iPhone/iPad
-2. Create a new shortcut with these actions:
-   - **Get Image** → Select from Photos or Get from Files
-   - **Dictionary** → Create headers:
-     - Key: `X-API-Key`, Value: `your-secret-api-key`
-     - Key: `Content-Type`, Value: `image/png`
-   - **Request** → 
-     - URL: `https://your-domain.com/api/render?country=US&font=Inter`
-     - Method: `POST`
-     - Headers: (from Dictionary)
-     - Body: (Image from step 1)
-   - **Save to Photo Album** → Save the response image
-   - **Set Wallpaper** → (Optional)
-
-### API Key in Shortcuts
-
-- The API key is stored **inside the Shortcut** configuration
-- Each person using the Shortcut must enter their own API key
-- You can store the key in **iCloud Key-Value Store** for easier management
-
-For remote access, deploy the server to a cloud provider and use the public URL in your shortcut.
+For a complete step-by-step setup, troubleshooting tips, and a home-server deployment guide, see [AUTOMATION.md](AUTOMATION.md).
 
 ## Programmatic Usage
 
@@ -181,25 +158,28 @@ DateBG/
 ├── src/                    # Frontend React source
 │   ├── App.jsx            # Main application component
 │   ├── main.jsx           # React entry point
-│   └── styles/            # CSS stylesheets
+│   └── styles/            # CSS stylesheets (tokens, base, components)
 ├── server/                # Backend Express server
 │   ├── index.js          # Main server file
 │   ├── renderCalendar.js # Calendar rendering logic
 │   ├── registerFonts.js  # Font registration
-│   └── fonts/            # Custom font files
+│   └── fonts/            # Custom font files (Inter, Poppins, etc.)
+├── docs/                  # Screenshots and documentation assets
 ├── docker-compose.yml     # Docker Compose configuration
-├── Dockerfile            # Production Docker image
-├── Dockerfile.dev        # Development Docker image
-├── package.json          # Dependencies and scripts
-└── vite.config.js        # Vite configuration
+├── Dockerfile             # Production Docker image
+├── Dockerfile.dev         # Development Docker image
+├── package.json           # Dependencies and scripts
+├── vite.config.js         # Vite configuration
+├── .env.example           # Example environment variables
+└── README.md              # This file
 ```
 
 ## Technology Stack
 
 - **Frontend**: React 18, Vite
 - **Backend**: Express.js, Node.js
-- **Rendering**: Skia-Canvas (for image manipulation)
-- **Fonts**: @fontsource packages (Google Fonts)
+- **Rendering**: Skia-Canvas (for server-side image manipulation)
+- **Fonts**: 40+ @fontsource packages registered server-side for reliable Skia rendering
 - **API**: Nager.Date API for holiday data
 - **Containerization**: Docker, Docker Compose
 
@@ -228,7 +208,7 @@ For a production-ready deployment, create a `docker-compose.prod.yml`:
 ```yaml
 services:
   datebg:
-    image: datebg:prod
+    image: datebg:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -239,6 +219,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - API_KEY=${API_KEY:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -252,7 +234,8 @@ services:
 |----------|---------|-------------|
 | `PORT` | 3000 | Server port |
 | `NODE_ENV` | development | Environment mode |
-| `ALLOWED_ORIGINS` | (none) | Comma-separated list of allowed web origins (e.g., `https://yourdomain.com`) |
+| `API_KEY` | (none) | Secret key for API authentication. Required by `POST /api/render` when set. |
+| `ALLOWED_ORIGINS` | (none) | Comma-separated list of allowed web origins for CORS (e.g., `https://yourdomain.com`) |
 
 ### Deployment Options
 
@@ -407,4 +390,4 @@ Additional options to restrict access:
 
 ## License
 
-Private project (see `package.json`)
+This project is licensed under the [MIT License](LICENSE).
