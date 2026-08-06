@@ -171,6 +171,7 @@ function App() {
   const [apiKey, setApiKeyState] = useState(getApiKey())
   const [authError, setAuthError] = useState('')
   const [showApiKeyInput, setShowApiKeyInput] = useState(false)
+  const [authEnabled, setAuthEnabled] = useState(false)
 
   const previewRef = useRef(null)
   const fontSelectRef = useRef(null)
@@ -196,6 +197,18 @@ function App() {
   }, [])
 
   useEffect(() => {
+    // Check if authentication is enabled on the server
+    fetch(`${API_BASE}/api/health`)
+      .then((res) => res.json())
+      .then((data) => {
+        setAuthEnabled(data?.authEnabled || false)
+        // Show API key input if auth is enabled and no key is stored
+        if (data?.authEnabled && !getApiKey()) {
+          setShowApiKeyInput(true)
+        }
+      })
+      .catch(() => console.warn('Failed to check auth status'))
+
     const pickCountry = async (list) => {
       if (!selectedCountry && list.length > 0) {
         const detected = await detectCountryFromIP()
@@ -768,40 +781,44 @@ function App() {
 
       {status && <p className="status">{status}</p>}
       
-      {/* API Key Input Section */}
-      {authError && (
-        <div className="card auth-error-card">
-          <div className="card-header">
-            <h2 className="card-title" style={{ color: '#ef4444' }}>Authentication Required</h2>
-          </div>
-          <p className="auth-error-message">{authError}</p>
-        </div>
-      )}
-      
-      <section className="card">
-        <div className="card-header">
-          <h2 className="card-title">API Key</h2>
-        </div>
-        <div className="control-row">
-          <label className="control-label" htmlFor="api-key-input">Server API Key</label>
-          <div className="file-input" style={{ borderStyle: 'solid' }}>
-            <div className="file-info">
-              <input
-                id="api-key-input"
-                type="password"
-                className="input"
-                value={apiKey}
-                onChange={handleApiKeyChange}
-                placeholder="Enter your API key"
-                aria-label="API Key input"
-              />
+      {/* API Key Input Section - only shown when auth is enabled on server */}
+      {authEnabled && (
+        <>
+          {authError && (
+            <div className="card auth-error-card">
+              <div className="card-header">
+                <h2 className="card-title" style={{ color: '#ef4444' }}>Authentication Required</h2>
+              </div>
+              <p className="auth-error-message">{authError}</p>
             </div>
-          </div>
-          <p className="control-hint">
-            Required for authenticated API requests. Your key is stored locally in your browser.
-          </p>
-        </div>
-      </section>
+          )}
+          
+          <section className="card">
+            <div className="card-header">
+              <h2 className="card-title">API Key</h2>
+            </div>
+            <div className="control-row">
+              <label className="control-label" htmlFor="api-key-input">Server API Key</label>
+              <div className="file-input" style={{ borderStyle: 'solid' }}>
+                <div className="file-info">
+                  <input
+                    id="api-key-input"
+                    type="password"
+                    className="input"
+                    value={apiKey}
+                    onChange={handleApiKeyChange}
+                    placeholder="Enter your API key"
+                    aria-label="API Key input"
+                  />
+                </div>
+              </div>
+              <p className="control-hint">
+                Required for authenticated API requests. Your key is stored locally in your browser.
+              </p>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   )
 }

@@ -252,6 +252,7 @@ services:
 |----------|---------|-------------|
 | `PORT` | 3000 | Server port |
 | `NODE_ENV` | development | Environment mode |
+| `ALLOWED_ORIGINS` | (none) | Comma-separated list of allowed web origins (e.g., `https://yourdomain.com`) |
 
 ### Deployment Options
 
