@@ -185,16 +185,17 @@ export default function renderCalendar(ctx, width, height, options) {
       const cy = gridTop + (startRow + row) * cellH + cellH / 2
       const radius = Math.min(cellW, cellH) * 0.35
 
+      const scaledRadius = radius * scaleFactor
       if (holidaySet.has(day)) {
         ctx.beginPath()
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+        ctx.arc(cx, cy, scaledRadius, 0, Math.PI * 2)
         ctx.fillStyle = 'rgba(239, 68, 68, 0.85)'
         ctx.fill()
       }
 
       if (day === todayDate) {
         ctx.beginPath()
-        ctx.arc(cx, cy, radius * 0.85, 0, Math.PI * 2)
+        ctx.arc(cx, cy, scaledRadius * 0.85, 0, Math.PI * 2)
         ctx.strokeStyle = '#3b82f6'
         ctx.lineWidth = Math.max(2, Math.round(overlayWidth / 200))
         ctx.stroke()
