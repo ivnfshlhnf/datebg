@@ -162,6 +162,8 @@ function App() {
   const [fontOpen, setFontOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('Background')
   const [today, setToday] = useState(() => new Date())
+  const [exportString, setExportString] = useState('')
+  const [fullDownloadUrl, setFullDownloadUrl] = useState('')
 
   const previewRef = useRef(null)
   const fontSelectRef = useRef(null)
@@ -260,6 +262,13 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [fontOpen])
 
+  // Keep exportString in sync with current params
+  useEffect(() => {
+    const queryString = `?${buildParams().toString()}`
+    setExportString(queryString)
+    setFullDownloadUrl(`${window.location.origin}/api/render${queryString}`)
+  }, [selectedCountry, fontFamily, fontScale, calendarWidth, calendarHeight, calendarY, framePadding, showFrame, frameOpacity, frameColor, frameBorder, textOutline, textOutlineAutoContrast])
+
   const buildParams = () => {
     const params = new URLSearchParams()
     if (selectedCountry) params.append('country', selectedCountry)
@@ -277,6 +286,27 @@ function App() {
     params.append('textOutlineAutoContrast', String(textOutlineAutoContrast))
     params.append('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone)
     return params
+  }
+
+  const applyParamsFromString = (paramString) => {
+    // Remove leading '?' if present
+    const cleanString = paramString.startsWith('?') ? paramString.slice(1) : paramString
+    const params = new URLSearchParams(cleanString)
+
+    // Parse and apply each known parameter
+    if (params.has('country')) setSelectedCountry(params.get('country'))
+    if (params.has('font')) setFontFamily(params.get('font'))
+    if (params.has('fontScale')) setFontScale(Number(params.get('fontScale')))
+    if (params.has('calendarWidth')) setCalendarWidth(Number(params.get('calendarWidth')))
+    if (params.has('calendarHeight')) setCalendarHeight(Number(params.get('calendarHeight')))
+    if (params.has('calendarY')) setCalendarY(Number(params.get('calendarY')))
+    if (params.has('framePadding')) setFramePadding(Number(params.get('framePadding')))
+    if (params.has('showFrame')) setShowFrame(params.get('showFrame') === 'true')
+    if (params.has('frameOpacity')) setFrameOpacity(Number(params.get('frameOpacity')))
+    if (params.has('frameColor')) setFrameColor(params.get('frameColor'))
+    if (params.has('frameBorder')) setFrameBorder(params.get('frameBorder') === 'true')
+    if (params.has('textOutline')) setTextOutline(params.get('textOutline') === 'true')
+    if (params.has('textOutlineAutoContrast')) setTextOutlineAutoContrast(params.get('textOutlineAutoContrast') === 'true')
   }
 
   const renderPreview = async () => {
@@ -582,21 +612,38 @@ function App() {
         </Section>
 
         <Section
-          title="API Link"
-          open={activeSection === 'API Link'}
-          onToggle={() => setActiveSection('API Link')}
+          title="Export Settings"
+          open={activeSection === 'Export Settings'}
+          onToggle={() => setActiveSection('Export Settings')}
         >
+          <p className="control-hint" style={{ marginBottom: '12px' }}>
+            Bookmark or share this URL to download your customized calendar wallpaper. For programmatic use, send a POST request with your background image to the URL.
+          </p>
           <div className="control-row params-row">
             <div className="file-input" style={{ borderStyle: 'solid' }}>
               <div className="file-info">
-                <span className="file-name" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>
-                  ?{buildParams().toString()}
-                </span>
+                <input
+                  type="text"
+                  className="input"
+                  value={fullDownloadUrl}
+                  onChange={(e) => {
+                    setFullDownloadUrl(e.target.value)
+                    // Extract query string from full URL and apply params
+                    try {
+                      const url = new URL(e.target.value)
+                      applyParamsFromString(url.search)
+                    } catch {
+                      applyParamsFromString(e.target.value)
+                    }
+                  }}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', width: '100%' }}
+                  aria-label="Download URL"
+                />
                 <button
                   type="button"
                   className="btn btn-text"
                   onClick={() => {
-                    navigator.clipboard.writeText(`?${buildParams().toString()}`)
+                    navigator.clipboard.writeText(fullDownloadUrl)
                     setCopied(true)
                     setTimeout(() => setCopied(false), 1500)
                   }}
