@@ -840,11 +840,33 @@ input[type='range']::-moz-range-thumb:active {
 }
 
 /* —————————————————————————————————━━━━━━━━━━━━━━
-   Disabled State Wrapper
-   —————————————————————————————————━━━━━━━━━━━━━━ */
+    Disabled State Wrapper
+    —————————————————————————————————━━━━━━━━━━━━━━ */
 
 .disabled-wrapper {
   opacity: 0.5;
   pointer-events: none;
   user-select: none;
+}
+
+/* —————————————————————————————————━━━━━━━━━━━━━━
+    API Key Card (top-of-page authentication prompt)
+    —————————————————————————————————━━━━━━━━━━━━━━ */
+
+.api-key-card {
+  border-left: 4px solid var(--accent);
+}
+
+.api-key-card .control-row {
+  margin-bottom: 0;
+}
+
+.auth-error-message {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: #ef4444;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.08);
 }
