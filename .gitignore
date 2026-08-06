@@ -33,3 +33,6 @@ rendered.png
 # Docker artifacts
 *.tar
 *.tar.gz
+
+# Workspace instruction directory
+.clinerules/

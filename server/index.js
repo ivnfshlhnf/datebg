@@ -8,6 +8,8 @@ import renderCalendar from './renderCalendar.js'
 import { registerAllFonts } from './registerFonts.js'
 import helmet from 'helmet'
 
+const helmetDefaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -27,7 +29,16 @@ app.use(cors({
   },
   credentials: true
 }))
-app.use(helmet())
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmetDefaultDirectives,
+      'img-src': ["'self'", 'data:', 'blob:'],
+      'connect-src': ["'self'", 'https://ipapi.co']
+    }
+  }
+}))
 
 // Rate limiter for failed API key attempts
 const failedAttemptsLimiter = rateLimit({
