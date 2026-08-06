@@ -4,6 +4,10 @@ import './styles/components.css'
 
 const API_BASE = ''
 
+// API Key stored in localStorage for authenticated requests
+const getApiKey = () => localStorage.getItem('datebg_api_key') || ''
+const setApiKey = (key) => localStorage.setItem('datebg_api_key', key)
+
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
@@ -164,6 +168,9 @@ function App() {
   const [today, setToday] = useState(() => new Date())
   const [exportString, setExportString] = useState('')
   const [fullDownloadUrl, setFullDownloadUrl] = useState('')
+  const [apiKey, setApiKeyState] = useState(getApiKey())
+  const [authError, setAuthError] = useState('')
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false)
 
   const previewRef = useRef(null)
   const fontSelectRef = useRef(null)
@@ -318,18 +325,35 @@ function App() {
 
     try {
       const imageBuffer = await imageFile.arrayBuffer()
+      const headers = {
+        'Content-Type': imageFile.type || 'application/octet-stream'
+      }
+      
+      // Include API key if configured
+      if (apiKey) {
+        headers['X-API-Key'] = apiKey
+      }
+      
       const response = await fetch(`${API_BASE}/api/render?${params.toString()}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': imageFile.type || 'application/octet-stream'
-        },
+        headers,
         body: imageBuffer
       })
 
+      // Handle authentication errors
+      if (response.status === 401) {
+        setAuthError('Invalid or missing API key. Please enter your API key to continue.')
+        setShowApiKeyInput(true)
+        throw new Error('Authentication required')
+      }
+      
       if (!response.ok) {
         const text = await response.text()
         throw new Error(text || 'Render failed')
       }
+
+      // Clear any previous auth errors on success
+      setAuthError('')
 
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
@@ -348,8 +372,17 @@ function App() {
       setStatus('')
     } catch (err) {
       console.error(err)
-      setStatus('Render failed. Check image format.')
+      if (err.message !== 'Authentication required') {
+        setStatus('Render failed. Check image format.')
+      }
     }
+  }
+
+  const handleApiKeyChange = (e) => {
+    const newKey = e.target.value
+    setApiKeyState(newKey)
+    setApiKey(newKey)
+    setAuthError('')
   }
 
   const handleDownload = async () => {
@@ -734,6 +767,41 @@ function App() {
       )}
 
       {status && <p className="status">{status}</p>}
+      
+      {/* API Key Input Section */}
+      {authError && (
+        <div className="card auth-error-card">
+          <div className="card-header">
+            <h2 className="card-title" style={{ color: '#ef4444' }}>Authentication Required</h2>
+          </div>
+          <p className="auth-error-message">{authError}</p>
+        </div>
+      )}
+      
+      <section className="card">
+        <div className="card-header">
+          <h2 className="card-title">API Key</h2>
+        </div>
+        <div className="control-row">
+          <label className="control-label" htmlFor="api-key-input">Server API Key</label>
+          <div className="file-input" style={{ borderStyle: 'solid' }}>
+            <div className="file-info">
+              <input
+                id="api-key-input"
+                type="password"
+                className="input"
+                value={apiKey}
+                onChange={handleApiKeyChange}
+                placeholder="Enter your API key"
+                aria-label="API Key input"
+              />
+            </div>
+          </div>
+          <p className="control-hint">
+            Required for authenticated API requests. Your key is stored locally in your browser.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

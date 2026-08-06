@@ -95,6 +95,9 @@ Returns public holidays for a specific country and year.
 ### `POST /api/render`
 Renders a calendar overlay on an uploaded image.
 
+**Headers:**
+- `X-API-Key` - Your API key (required if `API_KEY` is configured on server)
+
 **Query Parameters:**
 - `country` - Country code for holidays (e.g., `US`, `ID`, `GB`)
 - `font` - Font family (e.g., `'Inter', sans-serif`)
@@ -131,9 +134,32 @@ This allows your lock screen or home screen to automatically display a fresh cal
 ```
 1. Get image from Photos/Files
 2. Make POST request to: http://your-server:3000/api/render?country=US&font=Inter
+   - Headers: X-API-Key: your-secret-api-key
 3. Save response to Photos
 4. (Optional) Set as wallpaper
 ```
+
+### iOS Shortcuts Setup
+
+1. Open the **Shortcuts** app on your iPhone/iPad
+2. Create a new shortcut with these actions:
+   - **Get Image** → Select from Photos or Get from Files
+   - **Dictionary** → Create headers:
+     - Key: `X-API-Key`, Value: `your-secret-api-key`
+     - Key: `Content-Type`, Value: `image/png`
+   - **Request** → 
+     - URL: `https://your-domain.com/api/render?country=US&font=Inter`
+     - Method: `POST`
+     - Headers: (from Dictionary)
+     - Body: (Image from step 1)
+   - **Save to Photo Album** → Save the response image
+   - **Set Wallpaper** → (Optional)
+
+### API Key in Shortcuts
+
+- The API key is stored **inside the Shortcut** configuration
+- Each person using the Shortcut must enter their own API key
+- You can store the key in **iCloud Key-Value Store** for easier management
 
 For remote access, deploy the server to a cloud provider and use the public URL in your shortcut.
 
@@ -302,21 +328,74 @@ flyctl status
 
 ### Security Considerations
 
-> **⚠️ Important**: DateBG has no built-in authentication. When deployed publicly, anyone can use your server.
+> **⚠️ Important**: When deploying DateBG publicly, you should enable API key authentication to prevent unauthorized usage.
 
-- **No Authentication**: The API endpoints are open by default. Anyone with your server URL can render calendars.
-- **Resource Usage**: Public deployments may incur unexpected compute costs from unauthorized usage.
-- **Rate Limiting**: Consider adding rate limiting middleware to prevent abuse.
+#### API Key Authentication
+
+DateBG now includes built-in API key authentication:
+
+1. **Generate a secure API key**:
+   ```bash
+   openssl rand -base64 32
+   # Example output: 7Xk9pL2mN5qR8tUwY3zA6bC1dE4fG7hJ0iK...
+   ```
+
+2. **Configure your deployment**:
+   ```bash
+   # Copy .env.example to .env
+   cp .env.example .env
+   
+   # Edit .env and add your API_KEY
+   ```
+
+3. **Update docker-compose.yml**:
+   ```yaml
+   environment:
+     - API_KEY=your-secret-api-key
+   ```
+
+4. **Frontend**: Enter your API key in the web interface (stored in localStorage)
+
+5. **iOS Shortcuts**: Add `X-API-Key` header to your requests
+
+#### Rate Limiting Protection
+
+The server includes built-in rate limiting:
+- **Failed auth attempts**: 10 per 15 minutes per IP
+- **General API requests**: 100 per 15 minutes per IP
+
+#### Cloudflare Protection (Recommended)
+
+When using Cloudflare Tunnel for remote access:
+
+1. **Enable WAF (Web Application Firewall)** - Free tier includes:
+   - SQL injection protection
+   - XSS protection
+   - Known bad bots blocking
+
+2. **Enable Bot Fight Mode** - Detects and blocks automated attacks
+
+3. **Rate Limiting Rules** - Add custom rules:
+   - Block IPs making >100 requests/minute
+   - Challenge suspicious traffic
+
+4. **IP Access Rules** - Optionally whitelist only your IPs
+
+#### Additional Security Measures
+
+- **CORS Configuration**: Set `ALLOWED_ORIGINS` to restrict which domains can access the API
+- **HTTPS**: Always use HTTPS (Cloudflare provides this automatically)
+- **Monitoring**: Check server logs for suspicious activity
+- **Strong Keys**: Use 32+ character random API keys
 
 ### Protecting Your Deployment
 
-Options to restrict access:
+Additional options to restrict access:
 
 1. **Private URL**: Keep your server URL secret (security through obscurity)
-2. **API Key Middleware**: Add simple token-based authentication
-3. **IP Whitelisting**: Restrict access to known IPs (useful for iOS Shortcuts from specific locations)
-4. **Cloud Provider Auth**: Use built-in auth from Railway, Render, etc.
-5. **Add Your Own Auth**: Implement authentication suitable for your use case
+2. **IP Whitelisting**: Restrict access to known IPs via firewall rules
+3. **Cloud Provider Auth**: Use built-in auth from Railway, Render, etc.
+4. **Network-Level Auth**: Use Cloudflare Access or similar zero-trust solutions
 
 ### Monitoring & Maintenance
 

@@ -3,6 +3,7 @@ import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Canvas, loadImage } from 'skia-canvas'
+import rateLimit from 'express-rate-limit'
 import renderCalendar from './renderCalendar.js'
 import { registerAllFonts } from './registerFonts.js'
 
@@ -12,8 +13,45 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const PORT = process.env.PORT || 3000
 const NODE_ENV = process.env.NODE_ENV || 'development'
+const API_KEY = process.env.API_KEY || ''
 
-app.use(cors())
+// CORS configuration - restrict to specific origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173', 'http://localhost:3000']
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, iOS Shortcuts)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error('Not allowed by CORS'))
+  },
+  credentials: true
+}))
+
+// Rate limiter for failed API key attempts
+const failedAttemptsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 failed attempts per window
+  standardHeaders: 'draft-6',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip,
+  message: { error: 'Too many failed authentication attempts, try again after 15 minutes' },
+  skip: (req) => {
+    // Skip rate limiting for successful authentications
+    const apiKey = req.get('X-API-Key')
+    return apiKey && apiKey === API_KEY
+  }
+})
+
+// General rate limiter for all API requests
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window
+  standardHeaders: 'draft-6',
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+})
+
+app.use(generalLimiter)
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -27,8 +65,30 @@ app.use((req, res, next) => {
 
 registerAllFonts()
 
+// API Key validation middleware for /api/render endpoint
+const validateApiKey = (req, res, next) => {
+  // Skip validation if no API key is configured (backward compatibility)
+  if (!API_KEY) return next()
+  
+  const apiKey = req.get('X-API-Key')
+  
+  if (!apiKey) {
+    return res.status(401).json({ error: 'API key required. Please provide X-API-Key header.' })
+  }
+  
+  if (apiKey !== API_KEY) {
+    // Apply rate limiting for failed attempts
+    failedAttemptsLimiter(req, res, () => {})
+    console.warn(`[security] Invalid API key attempt from ${req.ip}`)
+    return res.status(401).json({ error: 'Invalid API key' })
+  }
+  
+  next()
+}
+
 app.use(express.json())
 app.use('/api/render', express.raw({ type: '*/*', limit: '50mb' }))
+app.use('/api/render', validateApiKey)
 app.use(express.static(path.join(__dirname, '../dist')))
 
 const NAGER_API = 'https://date.nager.at/api/v3'
@@ -59,7 +119,7 @@ function getDateInTimeZone(timeZone) {
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true })
+  res.json({ ok: true, authEnabled: !!API_KEY })
 })
 
 app.post('/api/echo', (req, res) => {
