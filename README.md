@@ -1,9 +1,11 @@
 # DateBG
 
-DateBG is a web application that overlays the current month's calendar onto your phone background image. It fetches national holidays for your selected country and displays them on the calendar, creating a personalized wallpaper with practical date reference.
+DateBG is a vibe coded web application that overlays the current month's calendar onto your phone background image. It fetches national holidays for your selected country and displays them on the calendar, creating a personalized wallpaper with practical date reference.
 
 ## Features
 
+- **Vibe Coded**: Built iteratively with AI assistance
+- **Self-Hosted**: Requires a running server, designed for personal deployment
 - **Custom Calendar Overlay**: Renders the current month's calendar on any background image
 - **Holiday Integration**: Automatically fetches and displays national holidays via the [Nager.Date API](https://date.nager.at/api)
 - **iOS Shortcuts Integration**: Designed to work with the iOS Shortcuts app for automatic daily wallpaper refresh (see [iOS Shortcuts Usage](#ios-shortcuts-usage) below)
