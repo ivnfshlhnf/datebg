@@ -73,7 +73,7 @@
 body {
   margin: 0;
   font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', Arial, sans-serif;
+    'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
   font-size: var(--el-font-size-base);
   background: var(--el-bg-color-page);
   color: var(--el-text-color-primary);
@@ -166,15 +166,11 @@ header p {
 
 .section-header:hover {
   background: var(--el-fill-color-light);
-  color: var(--el-text-color-primary);
+  color: var(--el-color-primary);
 }
 
 .control-section.open .section-header {
   color: var(--el-text-color-primary);
-}
-
-.control-section.open .section-header:hover {
-  color: var(--el-color-primary-light-3);
 }
 
 .section-header h3 {
