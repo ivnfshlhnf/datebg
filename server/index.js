@@ -6,6 +6,7 @@ import { Canvas, loadImage } from 'skia-canvas'
 import rateLimit from 'express-rate-limit'
 import renderCalendar from './renderCalendar.js'
 import { registerAllFonts } from './registerFonts.js'
+import helmet from 'helmet'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -26,6 +27,7 @@ app.use(cors({
   },
   credentials: true
 }))
+app.use(helmet())
 
 // Rate limiter for failed API key attempts
 const failedAttemptsLimiter = rateLimit({
@@ -90,6 +92,18 @@ app.use(express.json())
 app.use('/api/render', express.raw({ type: '*/*', limit: '50mb' }))
 app.use('/api/render', validateApiKey)
 app.use(express.static(path.join(__dirname, '../dist')))
+
+function getPngDimensions(buffer) {
+  if (buffer.length < 24) return null
+  const sig = buffer.toString('hex', 0, 8)
+  if (sig !== '89504e470d0a1a0a') return null
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  }
+}
+
+const MAX_IMAGE_DIMENSION = 5000
 
 const NAGER_API = 'https://date.nager.at/api/v3'
 const MONTH_NAMES = [
@@ -157,6 +171,11 @@ app.post('/api/render', async (req, res) => {
   try {
     if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
       return res.status(400).json({ error: 'Raw image body is required' })
+    }
+
+    const dims = getPngDimensions(req.body)
+    if (dims && (dims.width > MAX_IMAGE_DIMENSION || dims.height > MAX_IMAGE_DIMENSION)) {
+      return res.status(400).json({ error: `Image too large: ${dims.width}x${dims.height}` })
     }
 
     const timeZone = req.query.timeZone || ''
