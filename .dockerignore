@@ -5,4 +5,9 @@ dist
 README.md
 .dockerignore
 Dockerfile
+Dockerfile.dev
 docker-compose.yml
+*.md
+.env
+.env.local
+.DS_Store

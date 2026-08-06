@@ -1,10 +1,39 @@
 services:
-  datebg:
+  # Development service with hot-reloading
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: datebg:dev
+    container_name: datebg-dev
+    ports:
+      - "5173:5173"  # Vite dev server
+      - "3000:3000"  # Express server
+    volumes:
+      # Mount source code for hot-reloading
+      - ./src:/app/src
+      - ./server:/app/server
+      - ./index.html:/app/index.html
+      - ./vite.config.js:/app/vite.config.js
+      - ./package.json:/app/package.json
+      # Keep node_modules separate to avoid conflicts
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+      - WATCHPACK_POLLING=true
+    restart: unless-stopped
+    command: npm run dev
+
+  # Production service (built image)
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: datebg:latest
     container_name: datebg
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
-    # To build locally instead, uncomment the next two lines:
-    # build:
-    #   context: .
