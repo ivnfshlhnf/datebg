@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import './styles/base.css'
+import './styles/components.css'
 
 const API_BASE = ''
 
@@ -7,53 +9,52 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
+// Curated font options — distinctive, non-generic pairings (frontend + server compatible)
 const FONT_OPTIONS = [
-  'Inter, sans-serif',
-  'Poppins, sans-serif',
-  'Work Sans, sans-serif',
-  'Nunito, sans-serif',
-  'Quicksand, sans-serif',
-  'Raleway, sans-serif',
-  'Manrope, sans-serif',
-  'Outfit, sans-serif',
-  'DM Sans, sans-serif',
-  'Space Grotesk, sans-serif',
-  'Sora, sans-serif',
-  'Plus Jakarta Sans, sans-serif',
-  'Urbanist, sans-serif',
-  'Lexend, sans-serif',
-  'Noto Sans, sans-serif',
-  'Be Vietnam Pro, sans-serif',
-  'Montserrat, sans-serif',
-  'Open Sans, sans-serif',
-  'Roboto, sans-serif',
-  'Lato, sans-serif',
-  'Source Sans 3, sans-serif',
-  'IBM Plex Sans, sans-serif',
-  'IBM Plex Mono, monospace',
-  'Fira Sans, sans-serif',
-  'Fira Code, monospace',
-  'JetBrains Mono, monospace',
-  'Cabin, sans-serif',
-  'Rubik, sans-serif',
-  'Playfair Display, serif',
-  'Merriweather, serif',
-  'Exo 2, sans-serif',
-  'Josefin Sans, sans-serif',
-  'Geist Sans, sans-serif',
-  'Geist Mono, monospace',
-  'Onest, sans-serif',
-  'Tajawal, sans-serif',
-  'El Messiri, sans-serif',
-  'Chakra Petch, sans-serif',
-  '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  'Arial, Helvetica, sans-serif',
-  'Verdana, Geneva, sans-serif',
-  'Tahoma, sans-serif'
+  // Serif (Display)
+  { value: "'DM Serif Display', serif", label: 'DM Serif Display' },
+  { value: "'Playfair Display', serif", label: 'Playfair Display' },
+  { value: "'Merriweather', serif", label: 'Merriweather' },
+  // Sans-Serif (Body)
+  { value: "'DM Sans', sans-serif", label: 'DM Sans' },
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Sora', sans-serif", label: 'Sora' },
+  { value: "'Outfit', sans-serif", label: 'Outfit' },
+  { value: "'Plus Jakarta Sans', sans-serif", label: 'Plus Jakarta Sans' },
+  { value: "'Space Grotesk', sans-serif", label: 'Space Grotesk' },
+  { value: "'Geist Sans', sans-serif", label: 'Geist Sans' },
+  { value: "'Work Sans', sans-serif", label: 'Work Sans' },
+  { value: "'Nunito', sans-serif", label: 'Nunito' },
+  { value: "'Quicksand', sans-serif", label: 'Quicksand' },
+  { value: "'Raleway', sans-serif", label: 'Raleway' },
+  { value: "'Manrope', sans-serif", label: 'Manrope' },
+  { value: "'Urbanist', sans-serif", label: 'Urbanist' },
+  { value: "'Lexend', sans-serif", label: 'Lexend' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Open Sans', sans-serif", label: 'Open Sans' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Lato', sans-serif", label: 'Lato' },
+  { value: "'Source Sans 3', sans-serif", label: 'Source Sans 3' },
+  { value: "'IBM Plex Sans', sans-serif", label: 'IBM Plex Sans' },
+  { value: "'Fira Sans', sans-serif", label: 'Fira Sans' },
+  { value: "'Cabin', sans-serif", label: 'Cabin' },
+  { value: "'Rubik', sans-serif", label: 'Rubik' },
+  { value: "'Exo 2', sans-serif", label: 'Exo 2' },
+  { value: "'Josefin Sans', sans-serif", label: 'Josefin Sans' },
+  { value: "'Onest', sans-serif", label: 'Onest' },
+  { value: "'Tajawal', sans-serif", label: 'Tajawal' },
+  { value: "'El Messiri', sans-serif", label: 'El Messiri' },
+  { value: "'Chakra Petch', sans-serif", label: 'Chakra Petch' },
+  // Monospace
+  { value: "'JetBrains Mono', monospace", label: 'JetBrains Mono' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'IBM Plex Mono', monospace", label: 'IBM Plex Mono' },
+  { value: "'Geist Mono', monospace", label: 'Geist Mono' }
 ]
 
 const DEFAULTS = {
-  fontFamily: FONT_OPTIONS[0],
+  fontFamily: FONT_OPTIONS[0].value,
   fontScale: 100,
   calendarWidth: 92,
   calendarHeight: 33,
@@ -81,15 +82,16 @@ async function detectCountryFromIP() {
 
 function Section({ title, children, reset, open, onToggle }) {
   return (
-    <div className={`control-section ${open ? 'open' : 'collapsed'}`}>
+    <div className={`section ${open ? 'open' : ''}`}>
       <button
         type="button"
         className="section-header"
         onClick={onToggle}
         aria-expanded={open}
       >
-        <h3>{title}</h3>
+        <h3 className="section-header-title">{title}</h3>
         <svg
+          className="section-header-icon"
           width="18"
           height="18"
           viewBox="0 0 24 24"
@@ -108,7 +110,7 @@ function Section({ title, children, reset, open, onToggle }) {
         <div className="section-body">
           {children}
           {reset && (
-            <button type="button" className="reset-section" onClick={reset}>
+            <button type="button" className="section-reset" onClick={reset}>
               Reset to defaults
             </button>
           )}
@@ -120,17 +122,18 @@ function Section({ title, children, reset, open, onToggle }) {
 
 function Toggle({ checked, onChange, label, disabled = false }) {
   return (
-    <label className={`toggle-row ${disabled ? 'disabled' : ''}`}>
-      <span className="toggle-track">
+    <label className={`toggle ${disabled ? 'disabled' : ''}`}>
+      <div className="toggle-track">
         <input
           type="checkbox"
+          className="toggle-input"
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange(e.target.checked)}
         />
         <span className="toggle-thumb" aria-hidden="true" />
-      </span>
-      <span>{label}</span>
+      </div>
+      <span className="toggle-label">{label}</span>
     </label>
   )
 }
@@ -315,7 +318,7 @@ function App() {
       setStatus('')
     } catch (err) {
       console.error(err)
-      setStatus('Failed to render preview.')
+      setStatus('Render failed. Check image format.')
     }
   }
 
@@ -338,13 +341,10 @@ function App() {
     setImageFile(null)
   }
 
-  const fontDisplayName = (font) =>
-    font.split(',')[0].replace(/[\"']/g, '')
-
   const renderSlider = (label, value, min, max, onChange, unit = '%') => (
     <div className="control-row range-control">
       <div className="range-header">
-        <label>{label}</label>
+        <label className="range-label">{label}</label>
         <span className="range-value">
           {value}
           {unit}
@@ -362,21 +362,23 @@ function App() {
 
   return (
     <div className="app">
-      <header>
-        <h1>DateBG</h1>
-        <p>Overlay this month's calendar onto your phone background.</p>
+      <header className="app-header">
+        <h1 className="app-title">DateBG</h1>
+        <p className="app-subtitle">Overlay this month's calendar onto your phone background.</p>
       </header>
 
-      <section className="card controls-card">
-        <h2>Customize</h2>
+      <section className="card">
+        <div className="card-header">
+          <h2 className="card-title">Customize</h2>
+        </div>
 
         <Section
           title="Background"
           open={activeSection === 'Background'}
           onToggle={() => setActiveSection('Background')}
         >
-          <div className="control-row file-control">
-            <label htmlFor="bg-image">Background image</label>
+          <div className="control-row">
+            <label className="control-label" htmlFor="bg-image">Upload wallpaper</label>
             <div className={`file-input ${imageFile ? 'has-file' : ''}`}>
               <input
                 id="bg-image"
@@ -398,15 +400,25 @@ function App() {
                     ×
                   </button>
                 </div>
-              ) : null}
+              ) : (
+                <div className="file-input-placeholder">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                    <circle cx="9" cy="9" r="2"/>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                  </svg>
+                  <span>Drop image or click to upload</span>
+                </div>
+              )}
             </div>
-            <p className="hint-text">Upload a phone wallpaper to get started.</p>
+            <p className="control-hint">Upload a phone wallpaper to get started.</p>
           </div>
 
           <div className="control-row">
-            <label htmlFor="country-select">Country</label>
+            <label className="control-label" htmlFor="country-select">Country</label>
             <select
               id="country-select"
+              className="select"
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
             >
@@ -417,7 +429,7 @@ function App() {
                 </option>
               ))}
             </select>
-            <p className="hint-text">Used to highlight national holidays.</p>
+            <p className="control-hint">Used to highlight national holidays.</p>
           </div>
         </Section>
 
@@ -433,7 +445,7 @@ function App() {
           }}
         >
           <div className="control-row" ref={fontSelectRef}>
-            <label>Font</label>
+            <label className="control-label">Font</label>
             <div className={`custom-select ${fontOpen ? 'open' : ''}`}>
               <button
                 type="button"
@@ -442,10 +454,11 @@ function App() {
                 aria-haspopup="listbox"
                 aria-expanded={fontOpen}
               >
-                <span style={{ fontFamily: fontFamily }}>
-                  {fontDisplayName(fontFamily)}
+                <span style={{ fontFamily: fontFamily.split(',')[0] }}>
+                  {FONT_OPTIONS.find(f => f.value === fontFamily)?.label || 'Select font'}
                 </span>
                 <svg
+                  className="custom-select-icon"
                   width="16"
                   height="16"
                   viewBox="0 0 24 24"
@@ -460,23 +473,24 @@ function App() {
                 </svg>
               </button>
               {fontOpen && (
-                <ul className="custom-select-options" role="listbox">
+                <div className="custom-select-dropdown" role="listbox">
                   {FONT_OPTIONS.map((f) => (
-                    <li key={f} role="option" aria-selected={fontFamily === f}>
-                      <button
-                        type="button"
-                        className={fontFamily === f ? 'selected' : ''}
-                        style={{ fontFamily: f }}
-                        onClick={() => {
-                          setFontFamily(f)
-                          setFontOpen(false)
-                        }}
-                      >
-                        {fontDisplayName(f)}
-                      </button>
-                    </li>
+                    <button
+                      key={f.value}
+                      type="button"
+                      className={`custom-select-option ${fontFamily === f.value ? 'selected' : ''}`}
+                      style={{ fontFamily: f.value.split(',')[0] }}
+                      onClick={() => {
+                        setFontFamily(f.value)
+                        setFontOpen(false)
+                      }}
+                      role="option"
+                      aria-selected={fontFamily === f.value}
+                    >
+                      {f.label}
+                    </button>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>
@@ -530,21 +544,24 @@ function App() {
             label="Show calendar frame"
           />
 
-          <div className={`frame-options ${showFrame ? '' : 'disabled'}`}>
+          <div className={showFrame ? '' : 'disabled-wrapper'}>
             {renderSlider('Frame spacing', framePadding, 0, 15, setFramePadding)}
 
-            <div className="control-row color-control">
-              <label htmlFor="frame-color">Background color</label>
+            <div className="control-row">
+              <label className="control-label" htmlFor="frame-color">Background color</label>
               <div className="color-field">
-                <input
-                  id="frame-color"
-                  type="color"
-                  value={frameColor}
-                  disabled={!showFrame}
-                  onChange={(e) => setFrameColor(e.target.value)}
-                />
+                <div className="color-swatch">
+                  <input
+                    id="frame-color"
+                    type="color"
+                    value={frameColor}
+                    disabled={!showFrame}
+                    onChange={(e) => setFrameColor(e.target.value)}
+                  />
+                </div>
                 <input
                   type="text"
+                  className="input color-input"
                   value={frameColor}
                   disabled={!showFrame}
                   onChange={(e) => setFrameColor(e.target.value)}
@@ -570,31 +587,30 @@ function App() {
           onToggle={() => setActiveSection('API Link')}
         >
           <div className="control-row params-row">
-            <div className="params-field">
-              <input
-                type="text"
-                readOnly
-                value={`?${buildParams().toString()}`}
-                aria-label="Generated API parameters"
-              />
-              <button
-                type="button"
-                className="copy"
-                onClick={() => {
-                  navigator.clipboard.writeText(`?${buildParams().toString()}`)
-                  setCopied(true)
-                  setTimeout(() => setCopied(false), 1500)
-                }}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
+            <div className="file-input" style={{ borderStyle: 'solid' }}>
+              <div className="file-info">
+                <span className="file-name" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>
+                  ?{buildParams().toString()}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-text"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`?${buildParams().toString()}`)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 1500)
+                  }}
+                >
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
             </div>
           </div>
         </Section>
 
         <div className="actions">
           <button
-            className="render"
+            className="btn btn-primary"
             onClick={renderPreview}
             disabled={!imageFile}
           >
@@ -602,7 +618,7 @@ function App() {
           </button>
 
           <button
-            className="download"
+            className="btn btn-success"
             onClick={handleDownload}
             disabled={!previewUrl}
           >
@@ -612,10 +628,12 @@ function App() {
       </section>
 
       <section className="card preview-card">
-        <h2>Preview</h2>
+        <div className="card-header">
+          <h2 className="card-title">Preview</h2>
+        </div>
         <div className="canvas-wrapper">
           {!imageFile ? (
-            <div className="hint">
+            <div className="preview-hint">
               <p>Upload a phone background image, then click Render Preview.</p>
             </div>
           ) : previewUrl ? (
@@ -625,21 +643,25 @@ function App() {
               className="preview-image"
             />
           ) : (
-            <div className="hint">
+            <div className="preview-hint">
               <p>Click "Render Preview" to generate the calendar overlay.</p>
             </div>
           )}
         </div>
         {imageFile && resolution.width > 0 && (
           <p className="resolution">
-            Output resolution: {resolution.width} × {resolution.height}px
+            Output: {resolution.width} × {resolution.height}px
           </p>
         )}
       </section>
 
       {imageFile && (
-        <section className="card holidays-card">
-          <h2>Holidays in {MONTH_NAMES[today.getMonth()]} {today.getFullYear()}</h2>
+        <section className="card">
+          <div className="card-header">
+            <h2 className="card-title">
+              Holidays in {MONTH_NAMES[today.getMonth()]} {today.getFullYear()}
+            </h2>
+          </div>
           {holidays.length === 0 ? (
             <p className="holidays-empty">
               {selectedCountry

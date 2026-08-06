@@ -45,6 +45,7 @@ function registerFontPackage(pkgName, weights = [400, 500, 700]) {
 }
 
 const FONT_PACKAGES = [
+  '@fontsource/dm-serif-display',
   '@fontsource/inter',
   '@fontsource/poppins',
   '@fontsource/work-sans',

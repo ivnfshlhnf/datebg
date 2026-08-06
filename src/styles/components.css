@@ -1,0 +1,850 @@
+/* ============================================
+   DateBG — Component Styles
+   Borderless architecture with tactile feedback
+   ============================================ */
+
+@import './tokens.css';
+
+/* —————————————————————————————————————————————————
+   App Container
+   ————————————————————————————————————————————————— */
+
+.app {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-12);
+}
+
+/* —————————————————————————————————————————————————
+   Header
+   ————————————————————————————————————————————————— */
+
+.app-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  padding: 0 var(--space-4);
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.app-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* —————————————————————————————————————————————————
+   Card (borderless — surface shift only)
+   ————————————————————————————————————————————————— */
+
+.card {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-normal);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* —————————————————————————————————————————————————
+   Collapsible Section (no borders)
+   ————————————————————————————————————————————————— */
+
+.section {
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.section:last-of-type {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out);
+}
+
+.section-header:hover {
+  background: var(--surface-hover);
+}
+
+.section-header-title {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.section-header-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.section.open .section-header-icon {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.section-body {
+  padding: var(--space-5);
+  background: var(--surface-card);
+}
+
+.section-reset {
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--duration-normal) var(--ease-out),
+    background-color var(--duration-normal) var(--ease-out);
+}
+
+.section-reset:hover {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* —————————————————————————————————————————————————
+   Control Row
+   ————————————————————————————————————————————————— */
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.control-row:last-child {
+  margin-bottom: 0;
+}
+
+.control-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.control-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* —————————————————————————————————————————————————
+   Range Slider (tactile, no borders)
+   ————————————————————————————————————————————————— */
+
+.range-control {
+  gap: var(--space-2);
+}
+
+.range-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.range-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.range-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  min-width: 48px;
+  text-align: center;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-input);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+input[type='range']:hover {
+  background: var(--surface-hover);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  border: none;
+  box-shadow: 0 2px 6px var(--shadow-accent);
+  cursor: grab;
+  transition:
+    transform var(--duration-fast) var(--ease-spring),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  background: var(--accent-light);
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+  cursor: grabbing;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  border: none;
+  box-shadow: 0 2px 6px var(--shadow-accent);
+  cursor: grab;
+  transition:
+    transform var(--duration-fast) var(--ease-spring),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+input[type='range']::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  background: var(--accent-light);
+}
+
+input[type='range']::-moz-range-thumb:active {
+  transform: scale(0.95);
+  cursor: grabbing;
+}
+
+/* —————————————————————————————————————————————————
+   Input & Select (borderless, surface-based)
+   ————————————————————————————————————————————————— */
+
+.input,
+.select {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--surface-input);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  transition:
+    background-color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.input:hover,
+.select:hover {
+  background: var(--surface-hover);
+}
+
+.input:focus,
+.select:focus {
+  background: var(--surface-elevated);
+  box-shadow: var(--focus-ring);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-10);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8a49e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+/* —————————————————————————————————————————————————
+   Custom Select Dropdown
+   ————————————————————————————————————————————————— */
+
+.custom-select {
+  position: relative;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--surface-input);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.custom-select-trigger:hover {
+  background: var(--surface-hover);
+}
+
+.custom-select.open .custom-select-trigger {
+  background: var(--surface-elevated);
+  box-shadow: var(--focus-ring);
+}
+
+.custom-select-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    color var(--duration-normal) var(--ease-out);
+}
+
+.custom-select.open .custom-select-icon {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 256px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.custom-select-option {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.custom-select-option:hover {
+  background: var(--surface-hover);
+}
+
+.custom-select-option.selected {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-weight: var(--font-semibold);
+}
+
+/* —————————————————————————————————————————————————
+   File Input (dashed zone)
+   ————————————————————————————————————————————————— */
+
+.file-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--input-height);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
+  border: 1px dashed var(--text-tertiary);
+  transition:
+    border-color var(--duration-normal) var(--ease-out),
+    background-color var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+.file-input:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.file-input.has-file {
+  border-style: solid;
+  border-color: var(--text-tertiary);
+}
+
+.file-input input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-input-placeholder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.file-input-placeholder svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-tertiary);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.file-clear {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.file-clear:hover {
+  background: rgba(245, 108, 108, 0.15);
+  color: #f56c6c;
+}
+
+/* —————————————————————————————————————————————————
+   Toggle Switch (tactile, spring easing)
+   ————————————————————————————————————————————————— */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-track {
+  position: relative;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-input);
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.toggle-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: var(--toggle-thumb);
+  height: var(--toggle-thumb);
+  border-radius: var(--radius-full);
+  background: var(--text-tertiary);
+  transform: translateY(-50%);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    background-color var(--duration-normal) var(--ease-out);
+  z-index: 1;
+}
+
+.toggle-input:checked + .toggle-thumb {
+  transform: translateX(20px) translateY(-50%);
+  background: #fff;
+}
+
+.toggle-input:checked ~ .toggle-track {
+  background: var(--accent);
+}
+
+.toggle-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* —————————————————————————————————————————————————
+   Color Picker
+   ————————————————————————————————————————————————— */
+
+.color-field {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.color-swatch {
+  width: 40px;
+  height: var(--input-height);
+  padding: 2px;
+  background: var(--surface-input);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.color-swatch:hover {
+  border-color: var(--accent);
+}
+
+.color-swatch input[type='color'] {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.color-swatch input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-swatch input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+.color-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+}
+
+/* —————————————————————————————————————————————————
+   Buttons (tactile feedback)
+   ————————————————————————————————————————————————— */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--button-height);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out),
+    transform var(--duration-fast) var(--ease-spring);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Default button */
+.btn-default {
+  background: var(--surface-input);
+  color: var(--text-primary);
+  border: 1px solid var(--text-tertiary);
+}
+
+.btn-default:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--text-secondary);
+}
+
+/* Primary button (accent) */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-light);
+  box-shadow: 0 6px 16px rgba(217, 119, 87, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+/* Success button */
+.btn-success {
+  background: #67c23a;
+  color: #fff;
+  border: none;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #79d14a;
+}
+
+.btn-success:active:not(:disabled) {
+  background: #5daf34;
+}
+
+/* Text button */
+.btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-3);
+  height: auto;
+}
+
+.btn-text:hover:not(:disabled) {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* —————————————————————————————————————————————————
+   Action Buttons Grid
+   ————————————————————————————————————————————————— */
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 480px) {
+  .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* —————————————————————————————————━━━━━━━━━━━━━━
+   Preview Card
+   —————————————————————————————————━━━━━━━━━━━━━━ */
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.canvas-wrapper {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--radius-md);
+  background: var(--surface-bg);
+  transition: max-width var(--duration-slow) var(--ease-out);
+}
+
+@media (min-width: 640px) {
+  .canvas-wrapper {
+    max-width: 360px;
+  }
+}
+
+.preview-image,
+.canvas-wrapper canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview-hint {
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.resolution {
+  margin-top: var(--space-3);
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+}
+
+/* —————————————————————————————————━━━━━━━━━━━━━━
+   Holidays List
+   —————————————————————————————————━━━━━━━━━━━━━━ */
+
+.holidays-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.holiday-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-input);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.holiday-item:hover {
+  background: var(--surface-hover);
+}
+
+.holiday-date {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: #f56c6c;
+  min-width: 64px;
+  padding-top: 2px;
+}
+
+.holiday-name {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.holidays-empty {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* —————————————————————————————————━━━━━━━━━━━━━━
+   Status Messages
+   —————————————————————————————————━━━━━━━━━━━━━━ */
+
+.status {
+  text-align: center;
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
+}
+
+/* —————————————————————————————————━━━━━━━━━━━━━━
+   Disabled State Wrapper
+   —————————————————————————————————━━━━━━━━━━━━━━ */
+
+.disabled-wrapper {
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
