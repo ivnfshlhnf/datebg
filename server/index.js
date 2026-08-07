@@ -122,11 +122,14 @@ const MONTH_NAMES = [
 ]
 
 function getDateInTimeZone(timeZone) {
-  if (!timeZone) return new Date()
+  // Server-side date math is always done in UTC so the rendered calendar is
+  // deterministic regardless of the server's local system time zone.
+  const referenceZone = timeZone || 'UTC'
+
   try {
     const now = new Date()
     const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone,
+      timeZone: referenceZone,
       year: 'numeric',
       month: 'numeric',
       day: 'numeric',
@@ -135,8 +138,21 @@ function getDateInTimeZone(timeZone) {
       second: 'numeric',
       hour12: false
     }).formatToParts(now)
+
     const get = (type) => Number(parts.find((p) => p.type === type)?.value)
-    return new Date(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+    // Some ICU builds return hour '24' for midnight. Normalize to 0 to avoid
+    // rolling over to the next calendar day.
+    const hour = get('hour')
+    return new Date(
+      Date.UTC(
+        get('year'),
+        get('month') - 1,
+        get('day'),
+        hour === 24 ? 0 : hour,
+        get('minute'),
+        get('second')
+      )
+    )
   } catch {
     return new Date()
   }
