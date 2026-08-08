@@ -190,12 +190,6 @@ export default function renderCalendar(ctx, width, height, options) {
       const radius = Math.min(cellW, cellH) * 0.35
 
       const scaledRadius = radius * scaleFactor
-      if (holidaySet.has(day)) {
-        ctx.beginPath()
-        ctx.arc(cx, cy, scaledRadius, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.85)'
-        ctx.fill()
-      }
 
       if (day === todayDate) {
         ctx.beginPath()
@@ -206,15 +200,16 @@ export default function renderCalendar(ctx, width, height, options) {
       }
 
       const dayFont = `bold ${cellH * 0.48 * scaleFactor}px "${primaryFont}", sans-serif`
+      const dayColor = holidaySet.has(day) ? '#ef4444' : fontColor
       if (textOutline) {
         drawOutlinedText(ctx, String(day), cx, cy, {
           font: dayFont,
-          fillStyle: fontColor,
+          fillStyle: dayColor,
           outlineWidth: Math.max(1, cellH * 0.48 * scaleFactor * 0.05),
           outlineColor: getOutlineColor(ctx, cx, cy, width, height, textOutlineAutoContrast, textOutlineColor)
         })
       } else {
-        ctx.fillStyle = fontColor
+        ctx.fillStyle = dayColor
         ctx.font = dayFont
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
