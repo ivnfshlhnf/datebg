@@ -44,46 +44,46 @@ function registerFontPackage(pkgName, weights = [400, 500, 700]) {
   }
 }
 
+// Keep in sync with FONT_OPTIONS in src/App.jsx and the Google Fonts link in index.html
 const FONT_PACKAGES = [
+  // Serif (Display)
   '@fontsource/dm-serif-display',
+  '@fontsource/playfair-display',
+  '@fontsource/merriweather',
+  // Sans-Serif
+  '@fontsource/dm-sans',
   '@fontsource/inter',
   '@fontsource/poppins',
+  '@fontsource/sora',
+  '@fontsource/outfit',
+  '@fontsource/plus-jakarta-sans',
+  '@fontsource/space-grotesk',
   '@fontsource/work-sans',
   '@fontsource/nunito',
   '@fontsource/quicksand',
   '@fontsource/raleway',
   '@fontsource/manrope',
-  '@fontsource/outfit',
-  '@fontsource/dm-sans',
-  '@fontsource/space-grotesk',
-  '@fontsource/sora',
-  '@fontsource/plus-jakarta-sans',
   '@fontsource/urbanist',
   '@fontsource/lexend',
-  '@fontsource/noto-sans',
-  '@fontsource/be-vietnam-pro',
   '@fontsource/montserrat',
   '@fontsource/open-sans',
   '@fontsource/roboto',
   '@fontsource/lato',
   '@fontsource/source-sans-3',
   '@fontsource/ibm-plex-sans',
-  '@fontsource/ibm-plex-mono',
   '@fontsource/fira-sans',
-  '@fontsource/fira-code',
-  '@fontsource/jetbrains-mono',
   '@fontsource/cabin',
   '@fontsource/rubik',
-  '@fontsource/playfair-display',
-  '@fontsource/merriweather',
   '@fontsource/exo-2',
   '@fontsource/josefin-sans',
-  '@fontsource/geist-sans',
-  '@fontsource/geist-mono',
   '@fontsource/onest',
   '@fontsource/tajawal',
   '@fontsource/el-messiri',
-  '@fontsource/chakra-petch'
+  '@fontsource/chakra-petch',
+  // Monospace
+  '@fontsource/jetbrains-mono',
+  '@fontsource/fira-code',
+  '@fontsource/ibm-plex-mono'
 ]
 
 export function registerAllFonts() {

@@ -13,13 +13,14 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-// Curated font options — distinctive, non-generic pairings (frontend + server compatible)
+// Curated font options — every family is loaded via Google Fonts on the frontend
+// and registered via @fontsource on the server so the dropdown preview matches the render.
 const FONT_OPTIONS = [
   // Serif (Display)
   { value: "'DM Serif Display', serif", label: 'DM Serif Display' },
   { value: "'Playfair Display', serif", label: 'Playfair Display' },
   { value: "'Merriweather', serif", label: 'Merriweather' },
-  // Sans-Serif (Body)
+  // Sans-Serif
   { value: "'DM Sans', sans-serif", label: 'DM Sans' },
   { value: "'Inter', sans-serif", label: 'Inter' },
   { value: "'Poppins', sans-serif", label: 'Poppins' },
@@ -27,7 +28,6 @@ const FONT_OPTIONS = [
   { value: "'Outfit', sans-serif", label: 'Outfit' },
   { value: "'Plus Jakarta Sans', sans-serif", label: 'Plus Jakarta Sans' },
   { value: "'Space Grotesk', sans-serif", label: 'Space Grotesk' },
-  { value: "'Geist Sans', sans-serif", label: 'Geist Sans' },
   { value: "'Work Sans', sans-serif", label: 'Work Sans' },
   { value: "'Nunito', sans-serif", label: 'Nunito' },
   { value: "'Quicksand', sans-serif", label: 'Quicksand' },
@@ -53,9 +53,12 @@ const FONT_OPTIONS = [
   // Monospace
   { value: "'JetBrains Mono', monospace", label: 'JetBrains Mono' },
   { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'IBM Plex Mono', monospace", label: 'IBM Plex Mono' },
-  { value: "'Geist Mono', monospace", label: 'Geist Mono' }
+  { value: "'IBM Plex Mono', monospace", label: 'IBM Plex Mono' }
 ]
+
+function getDisplayFamily(fontValue) {
+  return fontValue.split(',')[0].replace(/^["']|["']$/g, '')
+}
 
 const DEFAULTS = {
   fontFamily: FONT_OPTIONS[0].value,
@@ -586,7 +589,7 @@ function App() {
                 aria-haspopup="listbox"
                 aria-expanded={fontOpen}
               >
-                <span style={{ fontFamily: fontFamily.split(',')[0] }}>
+                <span style={{ fontFamily: getDisplayFamily(fontFamily) }}>
                   {FONT_OPTIONS.find(f => f.value === fontFamily)?.label || 'Select font'}
                 </span>
                 <svg
@@ -611,7 +614,7 @@ function App() {
                       key={f.value}
                       type="button"
                       className={`custom-select-option ${fontFamily === f.value ? 'selected' : ''}`}
-                      style={{ fontFamily: f.value.split(',')[0] }}
+                      style={{ fontFamily: getDisplayFamily(f.value) }}
                       onClick={() => {
                         setFontFamily(f.value)
                         setFontOpen(false)
