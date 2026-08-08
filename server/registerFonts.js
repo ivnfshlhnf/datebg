@@ -16,7 +16,7 @@ function readMetadata(pkgPath) {
   }
 }
 
-function registerFontPackage(pkgName, weights = [400, 500, 700]) {
+function registerFontPackage(pkgName) {
   const pkgPath = path.join(__dirname, '..', 'node_modules', pkgName)
   const filesDir = path.join(pkgPath, 'files')
   const meta = readMetadata(pkgPath)
@@ -28,19 +28,30 @@ function registerFontPackage(pkgName, weights = [400, 500, 700]) {
   const family = meta.family
   const id = meta.id
 
-  for (const weight of weights) {
-    if (!meta.weights.includes(weight)) continue
+  const fontFiles = []
+  const subsets = meta.subsets || ['latin']
 
-    const fileName = `${id}-latin-${weight}-normal.woff2`
-    const filePath = path.join(filesDir, fileName)
-
-    if (!fs.existsSync(filePath)) continue
-
-    try {
-      FontLibrary.use(filePath)
-    } catch (err) {
-      console.warn(`[fonts] Failed to register ${family} ${weight}:`, err.message)
+  for (const weight of meta.weights) {
+    for (const style of meta.styles || ['normal']) {
+      for (const subset of subsets) {
+        const fileName = `${id}-${subset}-${weight}-${style}.woff2`
+        const filePath = path.join(filesDir, fileName)
+        if (fs.existsSync(filePath)) {
+          fontFiles.push(filePath)
+        }
+      }
     }
+  }
+
+  if (fontFiles.length === 0) {
+    console.warn(`[fonts] No font files found for ${family}`)
+    return
+  }
+
+  try {
+    FontLibrary.use(family, fontFiles)
+  } catch (err) {
+    console.warn(`[fonts] Failed to register ${family}:`, err.message)
   }
 }
 
