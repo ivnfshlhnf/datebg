@@ -212,6 +212,7 @@ app.post('/api/render', async (req, res) => {
     const countryCode = req.query.country || ''
     const fontFamily = req.query.font || 'Inter, sans-serif'
     const fontScale = Math.max(50, Math.min(150, Number(req.query.fontScale) || 100))
+    const fontColor = req.query.fontColor || '#ffffff'
     const calendarWidth = Math.max(50, Math.min(100, Number(req.query.calendarWidth) || 92))
     const calendarHeight = Math.max(20, Math.min(50, Number(req.query.calendarHeight) || 33))
     const calendarY = Math.max(0, Math.min(100, Number(req.query.calendarY) || 33))
@@ -220,8 +221,11 @@ app.post('/api/render', async (req, res) => {
     const frameOpacity = Math.max(0, Math.min(100, Number(req.query.frameOpacity) || 55))
     const frameColor = req.query.frameColor || '#000000'
     const frameBorder = String(req.query.frameBorder || 'true').toLowerCase() !== 'false'
+    const frameBorderColor = req.query.frameBorderColor || '#ffffff'
     const textOutline = String(req.query.textOutline || 'true').toLowerCase() !== 'false'
+    const textOutlineColor = req.query.textOutlineColor || '#000000'
     const textOutlineAutoContrast = String(req.query.textOutlineAutoContrast || 'false').toLowerCase() === 'true'
+    const showHolidayList = String(req.query.showHolidayList || 'true').toLowerCase() !== 'false'
 
     let holidays = []
     if (countryCode) {
@@ -239,7 +243,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     const image = await loadImage(req.body)
-    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, outline=${textOutline}, autoContrast=${textOutlineAutoContrast}, timeZone=${timeZone || 'server'}`)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, fontColor=${fontColor}, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, borderColor=${frameBorderColor}, outline=${textOutline}, outlineColor=${textOutlineColor}, autoContrast=${textOutlineAutoContrast}, showHolidayList=${showHolidayList}, timeZone=${timeZone || 'server'}`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')
@@ -251,6 +255,7 @@ app.post('/api/render', async (req, res) => {
       month,
       fontFamily,
       fontScale,
+      fontColor,
       holidays,
       today,
       calendarWidth,
@@ -261,8 +266,11 @@ app.post('/api/render', async (req, res) => {
       frameOpacity,
       frameColor,
       frameBorder,
+      frameBorderColor,
       textOutline,
-      textOutlineAutoContrast
+      textOutlineColor,
+      textOutlineAutoContrast,
+      showHolidayList
     })
 
     const pngBuffer = await canvas.png

@@ -29,11 +29,11 @@ function getSamplePixel(ctx, x, y, width, height) {
   }
 }
 
-function getOutlineColor(ctx, x, y, width, height, autoContrast) {
-  if (!autoContrast) return 'rgba(0, 0, 0, 0.9)'
+function getOutlineColor(ctx, x, y, width, height, autoContrast, outlineColor = '#000000') {
+  if (!autoContrast) return hexToRgba(outlineColor, 0.9)
   const sample = getSamplePixel(ctx, x, y, width, height)
   const bgLum = luminance(sample.r, sample.g, sample.b)
-  return bgLum > 0.5 ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)'
+  return bgLum > 0.5 ? hexToRgba(outlineColor, 0.9) : 'rgba(255, 255, 255, 0.9)'
 }
 
 function hexToRgba(hex, alpha) {
@@ -77,6 +77,7 @@ export default function renderCalendar(ctx, width, height, options) {
     month,
     fontFamily,
     fontScale,
+    fontColor = '#ffffff',
     holidays,
     today,
     calendarWidth = 92,
@@ -87,8 +88,11 @@ export default function renderCalendar(ctx, width, height, options) {
     frameOpacity = 55,
     frameColor = '#000000',
     frameBorder = true,
+    frameBorderColor = '#ffffff',
     textOutline = true,
-    textOutlineAutoContrast = false
+    textOutlineColor = '#000000',
+    textOutlineAutoContrast = false,
+    showHolidayList = true
   } = options
 
   const frameFill = hexToRgba(frameColor, frameOpacity / 100)
@@ -108,7 +112,7 @@ export default function renderCalendar(ctx, width, height, options) {
     ctx.fillStyle = frameFill
     ctx.fillRect(x, y, overlayWidth, overlayHeight)
     if (frameBorder) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
+      ctx.strokeStyle = hexToRgba(frameBorderColor, 0.4)
       ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
       ctx.strokeRect(x, y, overlayWidth, overlayHeight)
     }
@@ -125,12 +129,12 @@ export default function renderCalendar(ctx, width, height, options) {
   if (textOutline) {
     drawOutlinedText(ctx, headerText, headerX, headerY, {
       font: `bold ${titleSize}px "${primaryFont}", sans-serif`,
-      fillStyle: '#ffffff',
+      fillStyle: fontColor,
       outlineWidth: Math.max(1, titleSize * 0.06),
-      outlineColor: getOutlineColor(ctx, headerX, headerY, width, height, textOutlineAutoContrast)
+      outlineColor: getOutlineColor(ctx, headerX, headerY, width, height, textOutlineAutoContrast, textOutlineColor)
     })
   } else {
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = fontColor
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.font = `bold ${titleSize}px "${primaryFont}", sans-serif`
@@ -158,13 +162,13 @@ export default function renderCalendar(ctx, width, height, options) {
     if (textOutline) {
       drawOutlinedText(ctx, label, labelX, labelY, {
         font: `bold ${labelSize}px "${primaryFont}", sans-serif`,
-        fillStyle: 'rgba(255, 255, 255, 0.8)',
+        fillStyle: fontColor,
         outlineWidth: Math.max(1, labelSize * 0.05),
-        outlineColor: getOutlineColor(ctx, labelX, labelY, width, height, textOutlineAutoContrast)
+        outlineColor: getOutlineColor(ctx, labelX, labelY, width, height, textOutlineAutoContrast, textOutlineColor)
       })
     } else {
       ctx.font = `bold ${labelSize}px "${primaryFont}", sans-serif`
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillStyle = fontColor
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(label, labelX, labelY)
@@ -205,12 +209,12 @@ export default function renderCalendar(ctx, width, height, options) {
       if (textOutline) {
         drawOutlinedText(ctx, String(day), cx, cy, {
           font: dayFont,
-          fillStyle: '#ffffff',
+          fillStyle: fontColor,
           outlineWidth: Math.max(1, cellH * 0.48 * scaleFactor * 0.05),
-          outlineColor: getOutlineColor(ctx, cx, cy, width, height, textOutlineAutoContrast)
+          outlineColor: getOutlineColor(ctx, cx, cy, width, height, textOutlineAutoContrast, textOutlineColor)
         })
       } else {
-        ctx.fillStyle = '#ffffff'
+        ctx.fillStyle = fontColor
         ctx.font = dayFont
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -223,7 +227,7 @@ export default function renderCalendar(ctx, width, height, options) {
 
   ctx.restore()
 
-  if (holidays.length > 0) {
+  if (showHolidayList && holidays.length > 0) {
     const sortedHolidays = holidays
       .slice()
       .sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -299,7 +303,7 @@ export default function renderCalendar(ctx, width, height, options) {
       ctx.fillStyle = frameFill
       ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
       if (frameBorder) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.strokeStyle = hexToRgba(frameBorderColor, 0.3)
         ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
         ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
       }
@@ -310,7 +314,7 @@ export default function renderCalendar(ctx, width, height, options) {
       ctx.clip()
     }
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+    ctx.fillStyle = fontColor
     ctx.font = `500 ${listFontSize}px "${primaryFont}", sans-serif`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
@@ -326,11 +330,11 @@ export default function renderCalendar(ctx, width, height, options) {
         if (textOutline) {
           drawOutlinedText(ctx, line, lineX, lineY, {
             font: `500 ${listFontSize}px "${primaryFont}", sans-serif`,
-            fillStyle: 'rgba(255, 255, 255, 0.95)',
+            fillStyle: fontColor,
             textAlign: 'left',
             textBaseline: 'top',
             outlineWidth: listOutlineWidth,
-            outlineColor: getOutlineColor(ctx, lineX, lineY, width, height, textOutlineAutoContrast)
+            outlineColor: getOutlineColor(ctx, lineX, lineY, width, height, textOutlineAutoContrast, textOutlineColor)
           })
         } else {
           ctx.fillText(line, lineX, lineY)

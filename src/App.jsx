@@ -60,6 +60,7 @@ const FONT_OPTIONS = [
 const DEFAULTS = {
   fontFamily: FONT_OPTIONS[0].value,
   fontScale: 100,
+  fontColor: '#ffffff',
   calendarWidth: 92,
   calendarHeight: 33,
   calendarY: 33,
@@ -68,8 +69,11 @@ const DEFAULTS = {
   frameOpacity: 55,
   frameColor: '#000000',
   frameBorder: true,
+  frameBorderColor: '#ffffff',
   textOutline: true,
+  textOutlineColor: '#000000',
   textOutlineAutoContrast: false,
+  showHolidayList: true,
   country: 'ID'
 }
 
@@ -150,6 +154,7 @@ function App() {
   const [status, setStatus] = useState('')
   const [fontFamily, setFontFamily] = useState(DEFAULTS.fontFamily)
   const [fontScale, setFontScale] = useState(DEFAULTS.fontScale)
+  const [fontColor, setFontColor] = useState(DEFAULTS.fontColor)
   const [calendarWidth, setCalendarWidth] = useState(DEFAULTS.calendarWidth)
   const [calendarHeight, setCalendarHeight] = useState(DEFAULTS.calendarHeight)
   const [calendarY, setCalendarY] = useState(DEFAULTS.calendarY)
@@ -158,8 +163,11 @@ function App() {
   const [frameOpacity, setFrameOpacity] = useState(DEFAULTS.frameOpacity)
   const [frameColor, setFrameColor] = useState(DEFAULTS.frameColor)
   const [frameBorder, setFrameBorder] = useState(DEFAULTS.frameBorder)
+  const [frameBorderColor, setFrameBorderColor] = useState(DEFAULTS.frameBorderColor)
   const [textOutline, setTextOutline] = useState(DEFAULTS.textOutline)
+  const [textOutlineColor, setTextOutlineColor] = useState(DEFAULTS.textOutlineColor)
   const [textOutlineAutoContrast, setTextOutlineAutoContrast] = useState(DEFAULTS.textOutlineAutoContrast)
+  const [showHolidayList, setShowHolidayList] = useState(DEFAULTS.showHolidayList)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [resolution, setResolution] = useState({ width: 0, height: 0 })
   const [copied, setCopied] = useState(false)
@@ -288,13 +296,14 @@ function App() {
     const queryString = `?${buildParams().toString()}`
     setExportString(queryString)
     setFullDownloadUrl(`${window.location.origin}/api/render${queryString}`)
-  }, [selectedCountry, fontFamily, fontScale, calendarWidth, calendarHeight, calendarY, framePadding, showFrame, frameOpacity, frameColor, frameBorder, textOutline, textOutlineAutoContrast])
+  }, [selectedCountry, fontFamily, fontScale, fontColor, calendarWidth, calendarHeight, calendarY, framePadding, showFrame, frameOpacity, frameColor, frameBorder, frameBorderColor, textOutline, textOutlineColor, textOutlineAutoContrast, showHolidayList])
 
   const buildParams = () => {
     const params = new URLSearchParams()
     if (selectedCountry) params.append('country', selectedCountry)
     params.append('font', fontFamily)
     params.append('fontScale', String(fontScale))
+    params.append('fontColor', fontColor)
     params.append('calendarWidth', String(calendarWidth))
     params.append('calendarHeight', String(calendarHeight))
     params.append('calendarY', String(calendarY))
@@ -303,8 +312,11 @@ function App() {
     params.append('frameOpacity', String(frameOpacity))
     params.append('frameColor', frameColor)
     params.append('frameBorder', String(frameBorder))
+    params.append('frameBorderColor', frameBorderColor)
     params.append('textOutline', String(textOutline))
+    params.append('textOutlineColor', textOutlineColor)
     params.append('textOutlineAutoContrast', String(textOutlineAutoContrast))
+    params.append('showHolidayList', String(showHolidayList))
     params.append('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone)
     return params
   }
@@ -318,6 +330,7 @@ function App() {
     if (params.has('country')) setSelectedCountry(params.get('country'))
     if (params.has('font')) setFontFamily(params.get('font'))
     if (params.has('fontScale')) setFontScale(Number(params.get('fontScale')))
+    if (params.has('fontColor')) setFontColor(params.get('fontColor'))
     if (params.has('calendarWidth')) setCalendarWidth(Number(params.get('calendarWidth')))
     if (params.has('calendarHeight')) setCalendarHeight(Number(params.get('calendarHeight')))
     if (params.has('calendarY')) setCalendarY(Number(params.get('calendarY')))
@@ -326,8 +339,11 @@ function App() {
     if (params.has('frameOpacity')) setFrameOpacity(Number(params.get('frameOpacity')))
     if (params.has('frameColor')) setFrameColor(params.get('frameColor'))
     if (params.has('frameBorder')) setFrameBorder(params.get('frameBorder') === 'true')
+    if (params.has('frameBorderColor')) setFrameBorderColor(params.get('frameBorderColor'))
     if (params.has('textOutline')) setTextOutline(params.get('textOutline') === 'true')
+    if (params.has('textOutlineColor')) setTextOutlineColor(params.get('textOutlineColor'))
     if (params.has('textOutlineAutoContrast')) setTextOutlineAutoContrast(params.get('textOutlineAutoContrast') === 'true')
+    if (params.has('showHolidayList')) setShowHolidayList(params.get('showHolidayList') === 'true')
   }
 
   const renderPreview = async () => {
@@ -539,6 +555,12 @@ function App() {
             </select>
             <p className="control-hint">Used to highlight national holidays.</p>
           </div>
+
+          <Toggle
+            checked={showHolidayList}
+            onChange={setShowHolidayList}
+            label="Show holiday list"
+          />
         </Section>
 
         <Section
@@ -548,7 +570,9 @@ function App() {
           reset={() => {
             setFontFamily(DEFAULTS.fontFamily)
             setFontScale(DEFAULTS.fontScale)
+            setFontColor(DEFAULTS.fontColor)
             setTextOutline(DEFAULTS.textOutline)
+            setTextOutlineColor(DEFAULTS.textOutlineColor)
             setTextOutlineAutoContrast(DEFAULTS.textOutlineAutoContrast)
           }}
         >
@@ -605,11 +629,55 @@ function App() {
 
           {renderSlider('Font size', fontScale, 50, 150, setFontScale)}
 
+          <div className="control-row">
+            <label className="control-label" htmlFor="font-color">Font color</label>
+            <div className="color-field">
+              <div className="color-swatch">
+                <input
+                  id="font-color"
+                  type="color"
+                  value={fontColor}
+                  onChange={(e) => setFontColor(e.target.value)}
+                />
+              </div>
+              <input
+                type="text"
+                className="input color-input"
+                value={fontColor}
+                onChange={(e) => setFontColor(e.target.value)}
+                aria-label="Font color hex"
+              />
+            </div>
+          </div>
+
           <Toggle
             checked={textOutline}
             onChange={setTextOutline}
             label="Text outline"
           />
+
+          <div className={`control-row ${!textOutline || textOutlineAutoContrast ? 'disabled-wrapper' : ''}`}>
+            <label className="control-label" htmlFor="outline-color">Outline color</label>
+            <div className="color-field">
+              <div className="color-swatch">
+                <input
+                  id="outline-color"
+                  type="color"
+                  value={textOutlineColor}
+                  disabled={!textOutline || textOutlineAutoContrast}
+                  onChange={(e) => setTextOutlineColor(e.target.value)}
+                />
+              </div>
+              <input
+                type="text"
+                className="input color-input"
+                value={textOutlineColor}
+                disabled={!textOutline || textOutlineAutoContrast}
+                onChange={(e) => setTextOutlineColor(e.target.value)}
+                aria-label="Text outline color hex"
+              />
+            </div>
+          </div>
 
           <Toggle
             checked={textOutline && textOutlineAutoContrast}
@@ -644,6 +712,7 @@ function App() {
             setFrameOpacity(DEFAULTS.frameOpacity)
             setFrameColor(DEFAULTS.frameColor)
             setFrameBorder(DEFAULTS.frameBorder)
+            setFrameBorderColor(DEFAULTS.frameBorderColor)
           }}
         >
           <Toggle
@@ -679,6 +748,31 @@ function App() {
             </div>
 
             {renderSlider('Opacity', frameOpacity, 0, 100, setFrameOpacity)}
+
+            <div className={showFrame ? '' : 'disabled-wrapper'}>
+              <div className="control-row">
+                <label className="control-label" htmlFor="frame-border-color">Border color</label>
+                <div className="color-field">
+                  <div className="color-swatch">
+                    <input
+                      id="frame-border-color"
+                      type="color"
+                      value={frameBorderColor}
+                      disabled={!showFrame}
+                      onChange={(e) => setFrameBorderColor(e.target.value)}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    className="input color-input"
+                    value={frameBorderColor}
+                    disabled={!showFrame}
+                    onChange={(e) => setFrameBorderColor(e.target.value)}
+                    aria-label="Frame border color hex"
+                  />
+                </div>
+              </div>
+            </div>
 
             <Toggle
               checked={frameBorder}
