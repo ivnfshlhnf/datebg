@@ -73,6 +73,16 @@ a {
 }
 
 :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Don't let focus-visible override custom focus rings on interactive controls */
+.input:focus-visible,
+.select:focus-visible,
+.custom-select-trigger:focus-visible,
+.toggle-input:focus-visible ~ .toggle-track {
   outline: none;
   box-shadow: var(--focus-ring);
 }
