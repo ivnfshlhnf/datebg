@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { FontLibrary } from 'skia-canvas'
+import { FONTS } from '../shared/fonts.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -29,10 +30,16 @@ function registerFontPackage(pkgName) {
   const id = meta.id
 
   const fontFiles = []
-  const subsets = meta.subsets || ['latin']
+  // skia-canvas resolves families correctly only when each family is registered
+  // with a small, non-conflicting set of static files. Registering multiple
+  // subsets (latin, latin-ext, cyrillic, etc.) for the same family makes the
+  // entire family fall back to DejaVu in this version. The renderer only uses
+  // latin / normal weights, so that is all we need.
+  const subsets = ['latin']
+  const styles = ['normal']
 
   for (const weight of meta.weights) {
-    for (const style of meta.styles || ['normal']) {
+    for (const style of styles) {
       for (const subset of subsets) {
         const fileName = `${id}-${subset}-${weight}-${style}.woff2`
         const filePath = path.join(filesDir, fileName)
@@ -55,57 +62,15 @@ function registerFontPackage(pkgName) {
   }
 }
 
-// Keep in sync with FONT_OPTIONS in src/App.jsx and the Google Fonts link in index.html
-const FONT_PACKAGES = [
-  // Serif (Display)
-  '@fontsource/dm-serif-display',
-  '@fontsource/playfair-display',
-  '@fontsource/merriweather',
-  // Sans-Serif
-  '@fontsource/dm-sans',
-  '@fontsource/inter',
-  '@fontsource/poppins',
-  '@fontsource/sora',
-  '@fontsource/outfit',
-  '@fontsource/plus-jakarta-sans',
-  '@fontsource/space-grotesk',
-  '@fontsource/work-sans',
-  '@fontsource/nunito',
-  '@fontsource/quicksand',
-  '@fontsource/raleway',
-  '@fontsource/manrope',
-  '@fontsource/urbanist',
-  '@fontsource/lexend',
-  '@fontsource/montserrat',
-  '@fontsource/open-sans',
-  '@fontsource/roboto',
-  '@fontsource/lato',
-  '@fontsource/source-sans-3',
-  '@fontsource/ibm-plex-sans',
-  '@fontsource/fira-sans',
-  '@fontsource/cabin',
-  '@fontsource/rubik',
-  '@fontsource/exo-2',
-  '@fontsource/josefin-sans',
-  '@fontsource/onest',
-  '@fontsource/tajawal',
-  '@fontsource/el-messiri',
-  '@fontsource/chakra-petch',
-  // Monospace
-  '@fontsource/jetbrains-mono',
-  '@fontsource/fira-code',
-  '@fontsource/ibm-plex-mono'
-]
-
 export function registerAllFonts() {
   console.log('[startup] Registering bundled fonts...')
-  for (const pkg of FONT_PACKAGES) {
-    registerFontPackage(pkg)
+  for (const font of FONTS) {
+    registerFontPackage(font.packageName)
   }
   console.log(`[startup] Registered ${FontLibrary.families.length} font families`)
 }
 
-export const FONT_FAMILIES = FONT_PACKAGES.map((pkg) => {
-  const meta = readMetadata(path.join(__dirname, '..', 'node_modules', pkg))
-  return meta?.family || pkg.replace('@fontsource/', '').replace(/-/g, ' ')
+export const FONT_FAMILIES = FONTS.map((font) => {
+  const meta = readMetadata(path.join(__dirname, '..', 'node_modules', font.packageName))
+  return meta?.family || font.family
 })

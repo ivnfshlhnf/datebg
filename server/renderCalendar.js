@@ -1,10 +1,17 @@
+import { getFontFamilyName, DEFAULT_FONT_ID, FONTS } from '../shared/fonts.js'
+
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-function getFirstFontFamily(fontFamily) {
-  return fontFamily.split(',')[0].trim().replace(/["']/g, '')
+
+function resolveFontFamily(fontFamily) {
+  // server/index.js already validates the font ID and passes the human-readable
+  // family name (e.g. "Inter"). If that string matches a manifest family, use
+  // it directly; otherwise fall back to the default family.
+  const matched = FONTS.find((f) => f.family === fontFamily || f.id === fontFamily)
+  return matched ? matched.family : getFontFamilyName(DEFAULT_FONT_ID)
 }
 
 function luminance(r, g, b) {
@@ -97,7 +104,7 @@ export default function renderCalendar(ctx, width, height, options) {
 
   const frameFill = hexToRgba(frameColor, frameOpacity / 100)
 
-  const primaryFont = getFirstFontFamily(fontFamily)
+  const primaryFont = resolveFontFamily(fontFamily)
 
   const scaleFactor = fontScale / 100
   const overlayWidth = Math.round(width * (calendarWidth / 100))
@@ -298,44 +305,23 @@ export default function renderCalendar(ctx, width, height, options) {
       ctx.fillStyle = frameFill
       ctx.fillRect(panelX, panelY, panelWidth, panelHeight)
       if (frameBorder) {
-        ctx.strokeStyle = hexToRgba(frameBorderColor, 0.3)
+        ctx.strokeStyle = hexToRgba(frameBorderColor, 0.4)
         ctx.lineWidth = Math.max(1, Math.round(overlayWidth / 300))
         ctx.strokeRect(panelX, panelY, panelWidth, panelHeight)
       }
-
-      // Clip to prevent text overflow beyond the panel frame
-      ctx.beginPath()
-      ctx.rect(panelX, panelY, panelWidth, panelHeight)
-      ctx.clip()
     }
 
     ctx.fillStyle = fontColor
-    ctx.font = `500 ${listFontSize}px "${primaryFont}", sans-serif`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
 
-    const topTextY = panelY + panelPadding * 0.5
-    let currentY = topTextY
-    const listOutlineWidth = Math.max(1, listFontSize * 0.04)
-
-    wrappedHolidays.forEach((item) => {
-      item.wrappedLines.forEach((line, lineIndex) => {
-        const lineX = panelX + panelPadding
-        const lineY = currentY + lineIndex * listLineHeight
-        if (textOutline) {
-          drawOutlinedText(ctx, line, lineX, lineY, {
-            font: `500 ${listFontSize}px "${primaryFont}", sans-serif`,
-            fillStyle: fontColor,
-            textAlign: 'left',
-            textBaseline: 'top',
-            outlineWidth: listOutlineWidth,
-            outlineColor: getOutlineColor(ctx, lineX, lineY, width, height, textOutlineAutoContrast, textOutlineColor)
-          })
-        } else {
-          ctx.fillText(line, lineX, lineY)
-        }
+    let textY = panelY + panelPadding / 2
+    wrappedHolidays.forEach(({ wrappedLines }) => {
+      wrappedLines.forEach((line) => {
+        ctx.font = `500 ${listFontSize}px "${primaryFont}", sans-serif`
+        ctx.fillText(line, panelX + panelPadding / 2, textY)
+        textY += listLineHeight
       })
-      currentY += item.wrappedLines.length * listLineHeight
     })
 
     ctx.restore()

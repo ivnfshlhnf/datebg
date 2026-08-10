@@ -6,6 +6,7 @@ import { Canvas, loadImage } from 'skia-canvas'
 import rateLimit from 'express-rate-limit'
 import renderCalendar from './renderCalendar.js'
 import { registerAllFonts } from './registerFonts.js'
+import { FONTS, DEFAULT_FONT_ID, getFontFamilyName } from '../shared/fonts.js'
 import helmet from 'helmet'
 
 const helmetDefaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
@@ -210,7 +211,10 @@ app.post('/api/render', async (req, res) => {
     const month = today.getMonth()
 
     const countryCode = req.query.country || ''
-    const fontFamily = req.query.font || 'Inter, sans-serif'
+    const fontId = FONTS.some((f) => f.id === req.query.font)
+      ? req.query.font
+      : DEFAULT_FONT_ID
+    const fontFamily = getFontFamilyName(fontId)
     const fontScale = Math.max(50, Math.min(150, Number(req.query.fontScale) || 100))
     const fontColor = req.query.fontColor || '#ffffff'
     const calendarWidth = Math.max(50, Math.min(100, Number(req.query.calendarWidth) || 92))
@@ -243,7 +247,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     const image = await loadImage(req.body)
-    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily}, scale=${fontScale}%, fontColor=${fontColor}, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, borderColor=${frameBorderColor}, outline=${textOutline}, outlineColor=${textOutlineColor}, autoContrast=${textOutlineAutoContrast}, showHolidayList=${showHolidayList}, timeZone=${timeZone || 'server'}`)
+    console.log(`[render] Input ${req.body.length} bytes: ${image.width}x${image.height}, country=${countryCode || 'none'}, font=${fontFamily} (id=${fontId}), scale=${fontScale}%, fontColor=${fontColor}, cal=${calendarWidth}%x${calendarHeight}% @ y=${calendarY}%, pad=${framePadding}%, frame=${showFrame}, opacity=${frameOpacity}, color=${frameColor}, border=${frameBorder}, borderColor=${frameBorderColor}, outline=${textOutline}, outlineColor=${textOutlineColor}, autoContrast=${textOutlineAutoContrast}, showHolidayList=${showHolidayList}, timeZone=${timeZone || 'server'}`)
 
     const canvas = new Canvas(image.width, image.height)
     const ctx = canvas.getContext('2d')

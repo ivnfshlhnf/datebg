@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import './styles/base.css'
 import './styles/components.css'
+import { FONTS, FONT_GROUPS, DEFAULT_FONT_ID, getFontFamilyValue } from '../shared/fonts.js'
 
 const API_BASE = ''
 
@@ -12,51 +13,6 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
-
-// Curated font options — every family is loaded via Google Fonts on the frontend
-// and registered via @fontsource on the server so the dropdown preview matches the render.
-const FONT_OPTIONS = [
-  // Serif (Display)
-  { value: "'DM Serif Display', serif", label: 'DM Serif Display', group: 'Serif' },
-  { value: "'Playfair Display', serif", label: 'Playfair Display', group: 'Serif' },
-  { value: "'Merriweather', serif", label: 'Merriweather', group: 'Serif' },
-  // Sans-Serif
-  { value: "'DM Sans', sans-serif", label: 'DM Sans', group: 'Sans-Serif' },
-  { value: "'Inter', sans-serif", label: 'Inter', group: 'Sans-Serif' },
-  { value: "'Poppins', sans-serif", label: 'Poppins', group: 'Sans-Serif' },
-  { value: "'Sora', sans-serif", label: 'Sora', group: 'Sans-Serif' },
-  { value: "'Outfit', sans-serif", label: 'Outfit', group: 'Sans-Serif' },
-  { value: "'Plus Jakarta Sans', sans-serif", label: 'Plus Jakarta Sans', group: 'Sans-Serif' },
-  { value: "'Space Grotesk', sans-serif", label: 'Space Grotesk', group: 'Sans-Serif' },
-  { value: "'Work Sans', sans-serif", label: 'Work Sans', group: 'Sans-Serif' },
-  { value: "'Nunito', sans-serif", label: 'Nunito', group: 'Sans-Serif' },
-  { value: "'Quicksand', sans-serif", label: 'Quicksand', group: 'Sans-Serif' },
-  { value: "'Raleway', sans-serif", label: 'Raleway', group: 'Sans-Serif' },
-  { value: "'Manrope', sans-serif", label: 'Manrope', group: 'Sans-Serif' },
-  { value: "'Urbanist', sans-serif", label: 'Urbanist', group: 'Sans-Serif' },
-  { value: "'Lexend', sans-serif", label: 'Lexend', group: 'Sans-Serif' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat', group: 'Sans-Serif' },
-  { value: "'Open Sans', sans-serif", label: 'Open Sans', group: 'Sans-Serif' },
-  { value: "'Roboto', sans-serif", label: 'Roboto', group: 'Sans-Serif' },
-  { value: "'Lato', sans-serif", label: 'Lato', group: 'Sans-Serif' },
-  { value: "'Source Sans 3', sans-serif", label: 'Source Sans 3', group: 'Sans-Serif' },
-  { value: "'IBM Plex Sans', sans-serif", label: 'IBM Plex Sans', group: 'Sans-Serif' },
-  { value: "'Fira Sans', sans-serif", label: 'Fira Sans', group: 'Sans-Serif' },
-  { value: "'Cabin', sans-serif", label: 'Cabin', group: 'Sans-Serif' },
-  { value: "'Rubik', sans-serif", label: 'Rubik', group: 'Sans-Serif' },
-  { value: "'Exo 2', sans-serif", label: 'Exo 2', group: 'Sans-Serif' },
-  { value: "'Josefin Sans', sans-serif", label: 'Josefin Sans', group: 'Sans-Serif' },
-  { value: "'Onest', sans-serif", label: 'Onest', group: 'Sans-Serif' },
-  { value: "'Tajawal', sans-serif", label: 'Tajawal', group: 'Sans-Serif' },
-  { value: "'El Messiri', sans-serif", label: 'El Messiri', group: 'Sans-Serif' },
-  { value: "'Chakra Petch', sans-serif", label: 'Chakra Petch', group: 'Sans-Serif' },
-  // Monospace
-  { value: "'JetBrains Mono', monospace", label: 'JetBrains Mono', group: 'Monospace' },
-  { value: "'Fira Code', monospace", label: 'Fira Code', group: 'Monospace' },
-  { value: "'IBM Plex Mono', monospace", label: 'IBM Plex Mono', group: 'Monospace' }
-]
-
-const FONT_GROUPS = ['Serif', 'Sans-Serif', 'Monospace']
 
 const PRESET_COLORS = [
   '#ffffff', '#000000', '#d97757', '#e8e6e1',
@@ -115,12 +71,8 @@ const ResetIcon = () => (
   </svg>
 )
 
-function getDisplayFamily(fontValue) {
-  return fontValue.split(',')[0].replace(/^["']|["']$/g, '')
-}
-
 const DEFAULTS = {
-  fontFamily: FONT_OPTIONS[0].value,
+  fontFamily: DEFAULT_FONT_ID,
   fontScale: 100,
   fontColor: '#ffffff',
   calendarWidth: 92,
@@ -471,7 +423,11 @@ function App() {
 
     // Parse and apply each known parameter
     if (params.has('country')) setSelectedCountry(params.get('country'))
-    if (params.has('font')) setFontFamily(params.get('font'))
+    if (params.has('font')) {
+      const incomingFont = params.get('font')
+      const validFont = FONTS.some((f) => f.id === incomingFont) ? incomingFont : DEFAULT_FONT_ID
+      setFontFamily(validFont)
+    }
     if (params.has('fontScale')) setFontScale(Number(params.get('fontScale')))
     if (params.has('fontColor')) setFontColor(params.get('fontColor'))
     if (params.has('calendarWidth')) setCalendarWidth(Number(params.get('calendarWidth')))
@@ -559,6 +515,20 @@ function App() {
     }
   }
 
+  // Auto-render after the user stops changing controls so the preview
+  // stays in sync without requiring a manual click each time.
+  const renderPreviewRef = useRef(renderPreview)
+  renderPreviewRef.current = renderPreview
+  useEffect(() => {
+    if (!imageFile || !previewUrl || isRendering || !previewStale) return
+
+    const timer = setTimeout(() => {
+      renderPreviewRef.current()
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [previewStale, imageFile, previewUrl, isRendering])
+
   const handleApiKeyChange = (e) => {
     const newKey = e.target.value
     setApiKeyState(newKey)
@@ -618,7 +588,7 @@ function App() {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault()
         setFontOpen(true)
-        setFocusedFontIndex(FONT_OPTIONS.findIndex(f => f.value === fontFamily))
+        setFocusedFontIndex(FONTS.findIndex(f => f.id === fontFamily))
       }
       return
     }
@@ -633,7 +603,7 @@ function App() {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setFocusedFontIndex((prev) => {
-        const next = Math.min(prev + 1, FONT_OPTIONS.length - 1)
+        const next = Math.min(prev + 1, FONTS.length - 1)
         // Scroll into view
         requestAnimationFrame(() => {
           const opts = fontDropdownRef.current?.querySelectorAll('.custom-select-option')
@@ -659,7 +629,7 @@ function App() {
 
     if (e.key === 'Enter' && focusedFontIndex >= 0) {
       e.preventDefault()
-      setFontFamily(FONT_OPTIONS[focusedFontIndex].value)
+      setFontFamily(FONTS[focusedFontIndex].id)
       setFontOpen(false)
       setFocusedFontIndex(-1)
     }
@@ -697,27 +667,27 @@ function App() {
   // Group fonts by category for the dropdown
   const renderFontDropdown = () => {
     return FONT_GROUPS.map((group) => {
-      const groupFonts = FONT_OPTIONS.filter(f => f.group === group)
+      const groupFonts = FONTS.filter(f => f.group === group)
       if (groupFonts.length === 0) return null
       return (
         <div key={group}>
           <div className="custom-select-group-header">{group}</div>
           {groupFonts.map((f) => {
-            const globalIndex = FONT_OPTIONS.indexOf(f)
+            const globalIndex = FONTS.indexOf(f)
             return (
               <button
-                key={f.value}
+                key={f.id}
                 type="button"
-                className={`custom-select-option ${fontFamily === f.value ? 'selected' : ''} ${focusedFontIndex === globalIndex ? 'focused' : ''}`}
-                style={{ fontFamily: getDisplayFamily(f.value) }}
+                className={`custom-select-option ${fontFamily === f.id ? 'selected' : ''} ${focusedFontIndex === globalIndex ? 'focused' : ''}`}
+                style={{ fontFamily: getFontFamilyValue(f.id) }}
                 onClick={() => {
-                  setFontFamily(f.value)
+                  setFontFamily(f.id)
                   setFontOpen(false)
                   setFocusedFontIndex(-1)
                 }}
                 onMouseEnter={() => setFocusedFontIndex(globalIndex)}
                 role="option"
-                aria-selected={fontFamily === f.value}
+                aria-selected={fontFamily === f.id}
               >
                 {f.label}
               </button>
@@ -882,8 +852,8 @@ function App() {
                     aria-expanded={fontOpen}
                     aria-labelledby="font-label"
                   >
-                    <span style={{ fontFamily: getDisplayFamily(fontFamily) }}>
-                      {FONT_OPTIONS.find(f => f.value === fontFamily)?.label || 'Select font'}
+                    <span style={{ fontFamily: getFontFamilyValue(fontFamily) }}>
+                      {FONTS.find(f => f.id === fontFamily)?.label || 'Select font'}
                     </span>
                     <svg
                       className="custom-select-icon"
