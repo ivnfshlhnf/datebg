@@ -31,6 +31,13 @@
   --surface-elevated: #2a2a2c;
   --surface-input: #262628;
   --surface-hover: #2e2e30;
+  --surface-track-fill: var(--accent);
+
+  /* Success — tonal, cohesive with the warm palette */
+  --success: #8ab06a;
+  --success-light: #9ec077;
+  --success-dark: #759651;
+  --success-subtle: rgba(138, 176, 106, 0.12);
 
   /* Shadows for elevation (soft, diffused) */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -136,5 +143,6 @@
      ————————————————————————————————————————————————— */
 
   --max-width: 600px;
+  --max-width-wide: 1080px;
   --card-max-width: 560px;
 }
